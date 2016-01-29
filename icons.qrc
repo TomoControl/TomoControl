@@ -1,0 +1,13 @@
+<RCC>
+    <qresource prefix="/">
+        <file>resource/Arrow Down.ico</file>
+        <file>resource/Arrow Left.ico</file>
+        <file>resource/Arrow Right.ico</file>
+        <file>resource/Arrow Up.ico</file>
+        <file>resource/camera.png</file>
+        <file>resource/source.png</file>
+        <file>resource/rotate_arrow_left.ico</file>
+        <file>resource/rotate_arrow_right.ico</file>
+        <file>resource/object.png</file>
+    </qresource>
+</RCC>
