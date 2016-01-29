@@ -328,7 +328,7 @@ void MainWindow::onGetData(ushort * tdata)
                 qDebug() << "Cканирование:: Сохранение изображения:: Ошибка открытия файла";
             }
             file.write((char*)dData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
-            //frame->setRAWImage(dData);
+            frame->setRAWImage(dData);
             CountOfShoot++;
         }
 
