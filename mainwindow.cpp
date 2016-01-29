@@ -425,8 +425,10 @@ void MainWindow::convertToTiff()
         if (i >=11 && i < 101) NameForSave = QString("/s_00%1.tif").arg(i-1);
         if (i >=101) NameForSave = QString("/s_0%1.tif").arg(i-1);
 
+
         if (i == 1)
         {
+            // Расчет гистограммы первого файла
             int pixel = 0;
             uint * hist = new uint[65535];
             for (int k = 0; k < 65535; k++)
@@ -461,10 +463,12 @@ void MainWindow::convertToTiff()
                 }
             }
 
-            min -= 500;
-            max += 500;
+            min -= 1000;
+            max += 1000;
             qDebug() << "min" << min << "max" << max;
             pixel = 0;
+
+            // Коррекция первого файла по автоматически вычисленным границам
             for (int k=0;k<IMAGE_HEIGHT-1;k++)
             {
                 for (int j=0; j<IMAGE_WIDTH-1; j++)
