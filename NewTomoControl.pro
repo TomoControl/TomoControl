@@ -4,7 +4,7 @@
 #
 #-------------------------------------------------
 
-QT       += core gui network serialport
+QT       += core gui network serialport multimedia multimediawidgets
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -44,3 +44,5 @@ FORMS    += mainwindow.ui \
 
 RESOURCES += \
     icons.qrc
+
+QMAKE_CXXFLAGS += -std=gnu++14

@@ -20,14 +20,14 @@ void Dialog::on_pushButton_clicked()
 
 void Dialog::set_icons()
 {
-    //size of icons
+    // установка размеров иконок
     QSize size, pic_size;
     size.setHeight(50);
     size.setWidth(50);
     pic_size.setHeight(100);
     pic_size.setWidth(100);
 
-    //load icons
+    // загрузка иконок из ресурсов
     QPixmap source_icon, reciever_icon, object_icon;
     source_icon.load("://resource/source.png");
     reciever_icon.load("://resource/camera.png");
@@ -51,8 +51,8 @@ void Dialog::set_icons()
     left_r_icon = (QIcon)left_rotate;
     right_r_icon = (QIcon)right_rotate;
 
-    //set icons
-    // source
+    // установка иконок
+    // для источника излучения
     ui->source->setPixmap(source_icon);
 
     ui->source_back->setText("");
@@ -71,7 +71,7 @@ void Dialog::set_icons()
     ui->source_right->setIconSize(size);
     ui->source_right->setIcon(right_icon);
 
-    // object
+    // для объекта исследования
     ui->object->setPixmap(object_icon);
 
     ui->object_up->setText("");
@@ -90,7 +90,7 @@ void Dialog::set_icons()
     ui->object_right_rotate->setIconSize(size);
     ui->object_right_rotate->setIcon(right_r_icon);
 
-    // reciever
+    // для приемника излучения
     ui->reciever->setPixmap(reciever_icon);
 
     ui->reciever_back->setText("");
@@ -108,10 +108,13 @@ void Dialog::set_icons()
     ui->reciever_right->setText("");
     ui->reciever_right->setIconSize(size);
     ui->reciever_right->setIcon(right_icon);
+
 }
 
-//************* RECIEVER ****************//
-// pressed reciver - start move
+
+
+//************* Приемник ****************//
+// кнопки около приемка зажаты - соответствующее этому ручное перемещение
 void Dialog::on_reciever_back_pressed()
 {
     Axes_Mask axes;
@@ -144,7 +147,7 @@ void Dialog::on_reciever_left_pressed()
     emit move(axes,~MAX_FREQUENCY);
 }
 
-// reciever realesed - stop move
+// по отпусканию кнопки - остановка соответствующего перемещения
 void Dialog::on_reciever_forward_released()
 {
     Axes_Mask axes;
@@ -180,8 +183,8 @@ void Dialog::on_reciever_left_released()
     emit stop(axes);
 }
 
-//************* OBJECT ****************//
-// pressed object - start move
+//************* Объект ****************//
+// кнопки около объекта зажаты - соответствующее этому ручное перемещение
 void Dialog::on_object_right_rotate_pressed()
 {
     Axes_Mask axes;
@@ -214,7 +217,7 @@ void Dialog::on_object_up_pressed()
     emit move_2(axes,~MAX_FREQUENCY);
 }
 
-// object realesed - stop move
+// по отпусканию кнопки - остановка соответствующего перемещения
 void Dialog::on_object_right_rotate_released()
 {
     Axes_Mask axes;
@@ -247,8 +250,7 @@ void Dialog::on_object_up_released()
     emit stop_2(axes);
 }
 
-//************* SOURCE ****************//
-// pressed source - start move
+//************* Источник ****************//
 
 void Dialog::on_source_forward_pressed()
 {
@@ -282,7 +284,7 @@ void Dialog::on_source_left_pressed()
     emit move_2(axes,~MAX_FREQUENCY);
 }
 
-// source realesed - stop move
+// по отпусканию кнопки - остановка соответствующего перемещения
 void Dialog::on_source_forward_released()
 {
     Axes_Mask axes;
@@ -316,13 +318,45 @@ void Dialog::on_source_left_released()
 }
 
 
+// реализация одиночного снимка
+void Dialog::on_single_shoot_clicked()
+{
+    uchar U = (uchar)ui->U->text().toShort();
+    uchar I = (uchar)ui->I->text().toShort();
+    int time = ui->time->text().toInt();
+    emit make_shoot(U,I,time);
+}
 
+// визуализация полученного снимка
+void Dialog::set_image(ushort *tData)
+{
+    qDebug() << "set image";
+    ushort * dData;
+    dData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
+    memcpy(dData, tData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
 
+}
 
+void Dialog::on_webcam_on_stateChanged(int arg1)
+{
+    if(ui->webcam_on->isChecked())
+    {
+        Camera = new QCamera(this);
+        CameraViewfinder = new QCameraViewfinder(this);
+       //CameraImageCapture = new QCameraImageCapture(Camera,this);
+        Layout = new QVBoxLayout;
 
+        Camera->setViewfinder(CameraViewfinder);
 
+        Layout->addWidget(CameraViewfinder);
+        Layout->setMargin(0);
+        ui->scrollArea->setLayout(Layout);
 
-
-
-
-
+        Camera->start();
+    }
+    else
+    {
+        Camera->stop();
+//        delete Camera, Layout, CameraViewfinder;
+    }
+}

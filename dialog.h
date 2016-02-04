@@ -5,6 +5,14 @@
 #include <QDebug>
 #include "definitions.h"
 #include "structures.h"
+#include <QVBoxLayout>
+#include <QCameraImageCapture>
+#include <QCamera>
+#include <QtMultimediaWidgets/QCameraViewfinder>
+#include <QFileDialog>
+
+
+
 
 using namespace std;
 
@@ -20,6 +28,11 @@ public:
     explicit Dialog(QWidget *parent = 0);
     ~Dialog();
 
+    QCamera *Camera;
+    QCameraViewfinder *CameraViewfinder;
+    QCameraImageCapture *CameraImageCapture;
+    QVBoxLayout *Layout;
+
 signals:
     void close_dialog();
     void move(Axes_Mask,int);
@@ -27,9 +40,13 @@ signals:
     void move_2(Axes_Mask,int);
     void stop_2(Axes_Mask);
 
+    void make_shoot(uchar, uchar, int);
+
 public slots:
 
     void set_icons();
+
+    void set_image(ushort *);
 
 private slots:
 
@@ -82,6 +99,10 @@ private slots:
     void on_source_left_released();
 
     void on_source_right_pressed();
+
+    void on_single_shoot_clicked();
+
+    void on_webcam_on_stateChanged(int arg1);
 
 private:
     Ui::Dialog *ui;

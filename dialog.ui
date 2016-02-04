@@ -68,9 +68,9 @@
   <widget class="QPushButton" name="pushButton">
    <property name="geometry">
     <rect>
-     <x>10</x>
+     <x>330</x>
      <y>620</y>
-     <width>641</width>
+     <width>321</width>
      <height>71</height>
     </rect>
    </property>
@@ -221,21 +221,132 @@
     <string>left rotate</string>
    </property>
   </widget>
-  <widget class="QFrame" name="frame">
+  <widget class="QPushButton" name="single_shoot">
+   <property name="geometry">
+    <rect>
+     <x>140</x>
+     <y>620</y>
+     <width>181</width>
+     <height>71</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Single Shoot</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="I">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>650</y>
+     <width>51</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>25</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="time">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>680</y>
+     <width>51</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>2000</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>650</y>
+     <width>46</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>I,мкА</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_3">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>680</y>
+     <width>46</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>t,мс</string>
+   </property>
+  </widget>
+  <widget class="QLabel" name="label_2">
+   <property name="geometry">
+    <rect>
+     <x>30</x>
+     <y>620</y>
+     <width>51</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>U,кВ</string>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="U">
+   <property name="geometry">
+    <rect>
+     <x>70</x>
+     <y>620</y>
+     <width>51</width>
+     <height>20</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>82</string>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="webcam_on">
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>260</y>
-     <width>631</width>
-     <height>341</height>
+     <y>0</y>
+     <width>641</width>
+     <height>21</height>
     </rect>
    </property>
-   <property name="frameShape">
-    <enum>QFrame::StyledPanel</enum>
+   <property name="text">
+    <string>Включить Web- камеру</string>
    </property>
-   <property name="frameShadow">
-    <enum>QFrame::Raised</enum>
+  </widget>
+  <widget class="QScrollArea" name="scrollArea">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>250</y>
+     <width>631</width>
+     <height>361</height>
+    </rect>
    </property>
+   <property name="widgetResizable">
+    <bool>true</bool>
+   </property>
+   <widget class="QWidget" name="scrollAreaWidgetContents">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>629</width>
+      <height>359</height>
+     </rect>
+    </property>
+   </widget>
   </widget>
   <zorder>reciever_forward</zorder>
   <zorder>reciever_left</zorder>
@@ -253,7 +364,15 @@
   <zorder>object_right_rotate</zorder>
   <zorder>object_left_rotate</zorder>
   <zorder>reciever</zorder>
-  <zorder>frame</zorder>
+  <zorder>single_shoot</zorder>
+  <zorder>I</zorder>
+  <zorder>time</zorder>
+  <zorder>label</zorder>
+  <zorder>label_3</zorder>
+  <zorder>label_2</zorder>
+  <zorder>U</zorder>
+  <zorder>webcam_on</zorder>
+  <zorder>scrollArea</zorder>
  </widget>
  <resources/>
  <connections/>

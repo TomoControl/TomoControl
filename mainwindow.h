@@ -56,7 +56,7 @@ public:
     int min, max;
     int avFirstImage;
 
-    bool status, AutoStatus, XrayStatus, save_status;
+    bool status, XrayStatus;
 
 
 signals:
@@ -78,10 +78,6 @@ public slots:
 
 private slots:
 
-    void on_X_Ray_switch_clicked();
-
-    void on_GetImage_clicked();
-
     void onChangeU(uint u);
 
     void onChangeI(uint i);
@@ -97,6 +93,7 @@ private slots:
     void on_convert_image_clicked();
 
     void convertTo8Bit();
+
     void convertToTiff();
 
     void chooseDirectory(uchar stage);
@@ -105,27 +102,13 @@ private slots:
 
     void on_LoadAutoContrast_clicked();
 
-    void on_Set_I_clicked();
-
-    void on_Set_U_clicked();
-
-    void show_errors();
-
-    void on_pushButton_clicked();
-
     void on_NumberOfSteps_textChanged(const QString &arg1);
 
     void on_with_rotate_stateChanged(int arg1);
 
-    void on_pushButton_3_clicked();
-
-    void on_pushButton_2_clicked();
-
-    void on_Move_clicked();
-
-    void on_StopMove_clicked();
-
     void on_handle_clicked();
+
+    void make_shoot(uchar,uchar,int);
 
     void close_dialog();
 

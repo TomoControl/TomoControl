@@ -1,16 +1,16 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
-    status = 0; // state on/off autoscan
-    AutoStatus = 0;
+    // инициализация части переменных
+    status = 0; // метка состояния сканирования: включено - 1 / выключено - 0
     XrayStatus = 0;
-    save_status = 0;
     CountOfShoot = 0;
-    // ui
+
+    // графический интерфейс
     ui->setupUi(this);
     ui->with_rotate->setChecked(true);
 
@@ -18,16 +18,16 @@ MainWindow::MainWindow(QWidget *parent) :
 
     dialog = new Dialog;
 
-    // create image field
+    // создание поля для изображения
     frame = new myFrame;
     ui->frame_3->setLayout(new QHBoxLayout);
     ui->frame_3->layout()->addWidget(frame);
 
-    // create histogram field
+    // создание гистограммы
     graphicsScene = new myGraphicsScene(ui->graphicsView->width(), ui->graphicsView->height());
     ui->graphicsView->setScene(graphicsScene);
 
-    // init stepmotor
+    // инициализация драйверов ШД
     stepmotor = new stepmotor_rotate;
     stepmotor_2 = new stepmotor_rotate;
     Source = ("192.168.10.1");
@@ -43,26 +43,26 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(Timer , SIGNAL(timeout()) , this, SLOT(myTimer()));
     Timer->start(200);
 
-    // init cam
+    // инициализация приемника РИ
     cam = new AlphaCam;
 
-    // init rap
+    // инициализация источника РИ
     rap = new RAPEltechMED;
     rap->initialization();
 
-    //connects
+    // установление соединений
     connect(frame, SIGNAL(histCalculated(ushort*)), graphicsScene, SLOT(onHistCalculated(ushort*)));
     connect(graphicsScene, SIGNAL(changeHistOutput(int,int)), frame, SLOT(onChangeHistogrammWidget(int,int)));
-    connect(dialog,SIGNAL(close_dialog()),this,SLOT(close_dialog()));
+
 }
 
 MainWindow::~MainWindow()
 {
-    // disconnects
+    // разрыв соединений
     disconnect(frame, SIGNAL(histCalculated(ushort*)), graphicsScene, SLOT(onHistCalculated(ushort*)));
     disconnect(graphicsScene, SIGNAL(changeHistOutput(int,int)), frame, SLOT(onChangeHistogrammWidget(int,int)));
 
-    // disconnect & remove stepmotor
+    // отключение и осовобождение памяти для драйверов ШД
     disconnect(this , SIGNAL(set_UDP(QUdpSocket*)) , stepmotor , SLOT(Set_UDP(QUdpSocket*)));
     Timer->stop();
     QObject::disconnect(Timer , SIGNAL(timeout()) , this , SLOT(myTimer()));
@@ -71,11 +71,11 @@ MainWindow::~MainWindow()
 
     delete stepmotor , stepmotor_2, Timer;
 
-    // disconnect & remove cam
+    // отключение и осовобождение памяти для приемника РИ
     cam->Disconnect();
     delete cam;
 
-    // disconnect & remove rap
+    // отключение и осовобождение памяти для источника РИ
     rap->ClosePort();
     delete rap;
 
@@ -85,96 +85,66 @@ MainWindow::~MainWindow()
 
 void MainWindow::myTimer()    //действие по таймеру
 {
+    // отображение текущей координаты ШД
     show_current_position show;
     show = stepmotor->get_current_position();
-    ui->pos1->setText(QString::number(show.Position_2)); // отображение текущей координаты ШД
+    ui->pos1->setText(QString::number(show.Position_2));
+
+    // отображение текущего шага сканирования
     ui->current_step->setText(QString::number(CountOfShoot));
-    show_errors(); 
+
+    // отображение ошибок
+    //show_errors();
 }
 
-// ******************** Управление шаговым двигателем (ШД) ********************* //
-
-void MainWindow::on_Move_clicked()
-{
-//    Axes_Mask Axes;
-//    Axes_Mask Axes_2;
-//    int Max_frequency;
-//    Max_frequency = ui->Max_freq->text().toInt();
-//    Axes = {0};
-//    Axes_2 = {0};
-//    if (ui->Axe_y->isChecked()) Axes.a1 = 1; else Axes.a1 = 0;
-//    if (ui->Axe_x->isChecked()) Axes.a2 = 1; else Axes.a2 = 0;
-//    if (ui->Axe_z->isChecked()) Axes.a4 = 1; else Axes.a4 = 0;
-//    if (ui->Axe_y_2->isChecked()) Axes_2.a1 = 1; else Axes_2.a1 = 0;
-//    if (ui->Axe_x_2->isChecked()) Axes_2.a2 = 1; else Axes_2.a2 = 0;
-//    if (ui->Axe_z_2->isChecked()) Axes_2.a4 = 1; else Axes_2.a4 = 0;
-//    if(ui->Left->isChecked())
-//    {
-//        Max_frequency = ~Max_frequency;
-//    }
-//    if(ui->Right->isChecked())
-//    {
-//        Max_frequency = Max_frequency;
-//    }
-//    stepmotor->manual_movement(Axes,Max_frequency);
-//    stepmotor_2->manual_movement(Axes_2,Max_frequency);
-}
-
-void MainWindow::on_StopMove_clicked()
-{
-//    Axes_Mask Axes;
-//    Axes_Mask Axes_2;
-//    Axes = {0};
-//    Axes_2 = {0};
-//    if (ui->Axe_y->isChecked()) Axes.a1 = 1; else Axes.a1 = 0;
-//    if (ui->Axe_x->isChecked()) Axes.a2 = 1; else Axes.a2 = 0;
-//    if (ui->Axe_z->isChecked()) Axes.a4 = 1; else Axes.a4 = 0;
-//    if (ui->Axe_y_2->isChecked()) Axes_2.a1 = 1; else Axes_2.a1 = 0;
-//    if (ui->Axe_x_2->isChecked()) Axes_2.a2 = 1; else Axes_2.a2 = 0;
-//    if (ui->Axe_z_2->isChecked()) Axes_2.a4 = 1; else Axes_2.a4 = 0;
-//    stepmotor->stop_movement(Axes);
-//    stepmotor_2->stop_movement(Axes_2);
-}
-
-// ******************* Управление рентгеновским аппаратом (РАП) ********************* //
-// включение / выключение излучения
-void MainWindow::on_X_Ray_switch_clicked()
-{
-    switch (XrayStatus)
-    {
-    case 0: // включение
-        //ui->X_Ray_switch->setText("X-Ray Off");
-        //rap->on((uchar)ui->U_Single->text().toShort(), (uchar)ui->I_Single->text().toShort());
-        XrayStatus = 1;
-        break;
-    case 1: // выключение
-        rap->off();
-        //ui->X_Ray_switch->setText("X-Ray On");
-        XrayStatus = 0;
-        break;
-    default:
-        break;
-    }
-}
-
-// отображение текущего значения напряжения
+// отображение текущего значения напряжения на РТ
 void MainWindow::onChangeU(uint u)
 {
     ui->Current_U->setNum((int)u);
 }
 
-// отображение текущего значения тока
+// отображение текущего значения тока РТ
 void MainWindow::onChangeI(uint i)
 {
     ui->Current_I->setNum((int)i);
 }
 
-// ******************** Управление приемником РИ ********************* //
-// команда на получение изображения
-void MainWindow::on_GetImage_clicked()
+// ******************** Ручное управление системой ********************* //
+// активация диалогового окна с возможностью ручных перемещений
+void MainWindow::on_handle_clicked()
 {
-    cam->AcquireImage();
+    connect(dialog,SIGNAL(close_dialog()),this,SLOT(close_dialog()));
+    connect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor,SLOT(manual_movement(Axes_Mask,int)));
+    connect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor,SLOT(stop_movement(Axes_Mask)));
+    connect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
+    connect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
+    dialog->set_icons();
+    dialog->show();
 }
+
+void MainWindow::make_shoot(uchar U, uchar I, int time)
+{
+    rap->setU(U);
+    rap->setI(I);
+    cam->SetAccumulationTime(time);
+
+    connect(rap, SIGNAL(xrayFound()), cam, SLOT(AcquireImage()));
+    connect(cam, SIGNAL(GetDataComplete(ushort*)),dialog,SLOT(set_image(ushort*)));
+}
+
+// деактивация диалогового окна
+void MainWindow::close_dialog()
+{
+    disconnect(rap, SIGNAL(xrayFound()), cam, SLOT(AcquireImage()));
+    disconnect(cam, SIGNAL(GetDataComplete(ushort*)),dialog,SLOT(set_image(ushort*)));
+    disconnect(dialog,SIGNAL(close_dialog()),this,SLOT(close_dialog()));
+    disconnect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor,SLOT(manual_movement(Axes_Mask,int)));
+    disconnect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor,SLOT(stop_movement(Axes_Mask)));
+    disconnect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
+    disconnect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
+    dialog->hide();
+}
+
 
 // ******************** Автоматическое управление системой ********************* //
 
@@ -183,9 +153,12 @@ void MainWindow::on_Start_AutoScan_clicked()
 {
     if(!status)
     {
-        NumberOfImage = ui->NumberOfSteps->text().toInt(); // желаемое количество проекций
+        // желаемое количество проекций
+        NumberOfImage = ui->NumberOfSteps->text().toInt();
+        // индикация процесса выполнения набора проекций
         ui->progressBar->setRange(0,NumberOfImage);
 
+        // расчет длины 1 шага при перемещении объекта
         if ((FULL_TURN % NumberOfImage) == 0)
         {
             SizeOfStep = FULL_TURN / NumberOfImage;
@@ -197,6 +170,7 @@ void MainWindow::on_Start_AutoScan_clicked()
             return;
         }
 
+        // установление соединений для автосканирования
         connect(rap, SIGNAL(xrayFound()), cam, SLOT(AcquireImage()));
         connect(cam, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
         connect(this, SIGNAL(nextStep(int,int)), stepmotor, SLOT(calculate_go(int,int)));
@@ -204,16 +178,15 @@ void MainWindow::on_Start_AutoScan_clicked()
         connect(this, SIGNAL(finishAutoScan()), this, SLOT(finish_autoscan()));
         connect(this,SIGNAL(retry_acquire_image()),cam,SLOT(AcquireImage()));
 
-         qDebug() << "1";
         status = 1;
         CountOfShoot = 0;
         ui->Start_AutoScan->setText("Stop AutoScan");
+
+        // установка времени экспозиции камеры
         AccumulationTime = ui->Exposure->text().toInt();
-         qDebug() << "2";
         cam->SetAccumulationTime(AccumulationTime);
-         qDebug() << "3";
+        // включение источника РИ
         rap->on((uchar)ui->U_Auto->text().toShort(), (uchar)ui->I_Auto->text().toShort());
-         qDebug() << "4";
     }
     else
     {
@@ -221,10 +194,9 @@ void MainWindow::on_Start_AutoScan_clicked()
     }
 }
 
-
 void MainWindow::finish_autoscan()
 {
-
+    // отключение соединений, необходимых для автосканирования
     disconnect(rap, SIGNAL(xrayFound()), cam, SLOT(AcquireImage()));
     disconnect(cam, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
     disconnect(this, SIGNAL(nextStep(int,int)), stepmotor, SLOT(calculate_go(int,int)));
@@ -232,6 +204,7 @@ void MainWindow::finish_autoscan()
     disconnect(this, SIGNAL(finishAutoScan()), rap, SLOT(off()));
     disconnect(this,SIGNAL(retry_acquire_image()),cam,SLOT(AcquireImage()));
 
+    // выключение источника, сброс индикации
     rap->off();
     status = 0;
     ui->Start_AutoScan->setText("Start AutoScan");
@@ -243,15 +216,18 @@ void MainWindow::onGetData(ushort * tdata)
         qDebug() << "OnGetData";
         ushort * dData;
         dData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
-        //tdata = cam->GetData();
         memcpy(dData, tdata, IMAGE_WIDTH*IMAGE_HEIGHT*2);
 
         if (CountOfShoot == 0)
         {
             qDebug() << "mainwindow :: create ini";
-            // Создание ini-файла с параметрами съемки
+
+            // создание ini-файла с параметрами съемки
             QString Time_start = QTime::currentTime().toString("hh-mm-ss");
-            chooseDirectory(1); // функция выбора директории сохранения
+
+            // выбор директории для сохранения
+            chooseDirectory(1);
+
             QSettings *setting = new QSettings ( FileDirectory , QSettings::IniFormat);
             setting->setValue("NumberOfImage" , NumberOfImage);
             setting->setValue("Current" , (uchar)ui->I_Auto->text().toShort());
@@ -268,6 +244,7 @@ void MainWindow::onGetData(ushort * tdata)
         avpixel = dData[0];
         pixel = 0;
 
+        // расчет среднего значения пиксела
         for (int k=0; k<50; k++)
         {
             for (int j=0; j<50; j++)
@@ -284,6 +261,7 @@ void MainWindow::onGetData(ushort * tdata)
         }
         else
         {
+            // коррекция времени экспозиции
             if (avpixel - avFirstImage > ui->Compare->text().toInt())
             {
                 AccumulationTime += ui->TimeCorrect->text().toInt();
@@ -315,8 +293,9 @@ void MainWindow::onGetData(ushort * tdata)
         {
             // сохранение среднего значения пиксела на снимке
             QString txt = QString("Average%1").arg(CountOfShoot);
-            settingtxt->setValue(txt , avpixel);
-            settingtxt->setValue(txt, AccumulationTime);
+            settingtxt->setValue(txt,avpixel);
+            //settingtxt->setValue("avpixel" , avpixel);
+            //settingtxt->setValue(txt, AccumulationTime);
             settingtxt->sync();
 
             // сохранение изображений в raw-формате
@@ -659,32 +638,7 @@ void MainWindow::on_LoadAutoContrast_clicked()
     chooseDirectory(2);
 }
 
-void MainWindow::on_Set_I_clicked()
-{
-    uchar I;
-    //I = (uchar)ui->I_Single->text().toShort();
-    rap->setU(I);
-}
-
-void MainWindow::on_Set_U_clicked()
-{
-    uchar U;
-    //U = (uchar)ui->U_Single->text().toShort();
-    rap->setU(U);
-}
-
-void MainWindow::show_errors()
-{
-    char error;
-    error = stepmotor->get_error();
-    //ui->error->setText(QString::number(error)); // идентификация ошибки драйвера
-}
-
-void MainWindow::on_pushButton_clicked()
-{
-    rap->off();
-}
-
+// проверка корректности ввода желаемого числа проекций
 void MainWindow::on_NumberOfSteps_textChanged(const QString &arg1)
 {
     if ((ui->NumberOfSteps->text().toInt() == 1 && ui->with_rotate->isChecked()) ||
@@ -695,6 +649,7 @@ void MainWindow::on_NumberOfSteps_textChanged(const QString &arg1)
         ui->Start_AutoScan->setDisabled(false);
 }
 
+//????
 void MainWindow::on_with_rotate_stateChanged(int arg1)
 {
     if ((ui->NumberOfSteps->text().toInt() == 1 && ui->with_rotate->isChecked()) ||
@@ -706,18 +661,6 @@ void MainWindow::on_with_rotate_stateChanged(int arg1)
 }
 
 
-void MainWindow::on_pushButton_3_clicked()
-{
-    ui->groupBox_2->hide();
-    //ui->groupBox_3->show();
-}
-
-void MainWindow::on_pushButton_2_clicked()
-{
-    ui->groupBox_2->show();
-    //ui->groupBox_3->hide();
-}
-
 string MainWindow::qstr2str(QString x)
 {
     std::stringstream ss;
@@ -725,21 +668,4 @@ string MainWindow::qstr2str(QString x)
     return ss.str();
 }
 
-void MainWindow::on_handle_clicked()
-{
-    connect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor,SLOT(manual_movement(Axes_Mask,int)));
-    connect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor,SLOT(stop_movement(Axes_Mask)));
-    connect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
-    connect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
-    dialog->set_icons();
-    dialog->show();
-}
 
-void MainWindow::close_dialog()
-{
-    disconnect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor,SLOT(manual_movement(Axes_Mask,int)));
-    disconnect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor,SLOT(stop_movement(Axes_Mask)));
-    disconnect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
-    disconnect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
-    dialog->hide();
-}
