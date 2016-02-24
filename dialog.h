@@ -8,6 +8,7 @@
 #include <QVBoxLayout>
 #include <QCameraImageCapture>
 #include <QCamera>
+#include <QLabel>
 #include <QtMultimediaWidgets/QCameraViewfinder>
 #include <QFileDialog>
 
@@ -32,6 +33,8 @@ public:
     QCameraViewfinder *CameraViewfinder;
     QCameraImageCapture *CameraImageCapture;
     QVBoxLayout *Layout;
+    QLabel *lbl;
+    bool stat1;
 
 signals:
     void close_dialog();

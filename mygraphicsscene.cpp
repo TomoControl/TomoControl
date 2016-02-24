@@ -197,14 +197,3 @@ void myGraphicsScene::onHistCalculated(ushort *a)
         this->addLine(k, value, k, height);
     }
 }
-
-
-//myGraphicsScene::~myGraphicsScene()
-//{
-//    disconnect(this, SIGNAL(mousePress(QGraphicsSceneMouseEvent*)), this, SLOT(histMousePress(QGraphicsSceneMouseEvent*)));
-//    disconnect(this, SIGNAL(mouseRelease(QGraphicsSceneMouseEvent*)), this, SLOT(histMouseRelease(QGraphicsSceneMouseEvent*)));
-//    disconnect(this, SIGNAL(mouseMove(QGraphicsSceneMouseEvent*)), this, SLOT(histMouseMove(QGraphicsSceneMouseEvent*)));
-//    disconnect(this, SIGNAL(changeHist()), this, SLOT(onHistChanged()));
-
-//    delete lineLow , lineHigh , contrastLine;
-//}

@@ -63,7 +63,6 @@ MainWindow::~MainWindow()
     disconnect(graphicsScene, SIGNAL(changeHistOutput(int,int)), frame, SLOT(onChangeHistogrammWidget(int,int)));
 
     // отключение и осовобождение памяти для драйверов ШД
-    disconnect(this , SIGNAL(set_UDP(QUdpSocket*)) , stepmotor , SLOT(Set_UDP(QUdpSocket*)));
     Timer->stop();
     QObject::disconnect(Timer , SIGNAL(timeout()) , this , SLOT(myTimer()));
     stepmotor->go_emergency();

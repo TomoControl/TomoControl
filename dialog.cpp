@@ -6,6 +6,7 @@ Dialog::Dialog(QWidget *parent) :
     ui(new Ui::Dialog)
 {
     ui->setupUi(this);
+    stat1 = 0;
 }
 
 Dialog::~Dialog()
@@ -330,33 +331,59 @@ void Dialog::on_single_shoot_clicked()
 // визуализация полученного снимка
 void Dialog::set_image(ushort *tData)
 {
+    if(ui->webcam_on->isChecked()) ui->webcam_on->setChecked(false);
     qDebug() << "set image";
     ushort * dData;
     dData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
     memcpy(dData, tData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
 
+    QImage image(IMAGE_WIDTH, IMAGE_HEIGHT, QImage::Format_RGB32 );
+    int pixel = 0;
+    for (int k=0;k<IMAGE_HEIGHT-1;k++)
+    {
+        for (int j=0; j<IMAGE_WIDTH-1; j++)
+        {
+            pixel = dData[(k*IMAGE_WIDTH)+j]/ 64;
+            if (pixel > 255) pixel = 255;
+            if (pixel < 0) pixel = 0;
+            image.setPixel(j,k,QColor(pixel,pixel,pixel,255).rgba());
+        }
+    }
+    lbl = new QLabel(this);
+    Layout->removeWidget(CameraViewfinder);
+    Layout->addWidget(lbl);
+    QPixmap pixmap;
+    pixmap.convertFromImage(image);
+    lbl->setPixmap(pixmap);
 }
 
 void Dialog::on_webcam_on_stateChanged(int arg1)
 {
     if(ui->webcam_on->isChecked())
     {
-        Camera = new QCamera(this);
-        CameraViewfinder = new QCameraViewfinder(this);
-       //CameraImageCapture = new QCameraImageCapture(Camera,this);
-        Layout = new QVBoxLayout;
-
-        Camera->setViewfinder(CameraViewfinder);
+        ui->scrollArea->show();
+        if(stat1 == 0)
+        {
+            CameraViewfinder = new QCameraViewfinder(this);
+            Camera = new QCamera(this);
+            Layout = new QVBoxLayout;
+            Camera->setViewfinder(CameraViewfinder);
+        }
 
         Layout->addWidget(CameraViewfinder);
         Layout->setMargin(0);
-        ui->scrollArea->setLayout(Layout);
-
+        if(stat1 == 0)
+        {
+            ui->scrollArea->setLayout(Layout);
+        }
         Camera->start();
+        stat1 = 1;
     }
     else
     {
         Camera->stop();
-//        delete Camera, Layout, CameraViewfinder;
+        Layout->removeWidget(CameraViewfinder);
+        Layout->update();
+        ui->scrollArea->hide();
     }
 }
