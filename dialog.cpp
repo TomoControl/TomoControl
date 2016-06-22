@@ -7,6 +7,11 @@ Dialog::Dialog(QWidget *parent) :
 {
     ui->setupUi(this);
     stat1 = 0;
+    Layout = new QVBoxLayout;
+    frame = new myFrame;
+    //ui->frame->setLayout(Layout);
+    ui->scrollArea->show();
+    ui->scrollArea->setLayout(Layout);
 }
 
 Dialog::~Dialog()
@@ -115,73 +120,97 @@ void Dialog::set_icons()
 
 
 //************* Приемник ****************//
-// кнопки около приемка зажаты - соответствующее этому ручное перемещение
+// кнопки около приемника зажаты - соответствующее этому ручное перемещение
 void Dialog::on_reciever_back_pressed()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a4 = 1;
-    emit move(axes,~MAX_FREQUENCY);
+    if(!ui->traject_receiver_back->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a4 = 1;
+        emit move(axes,~MAX_FREQUENCY);
+    }
 }
 
 void Dialog::on_reciever_right_pressed()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a1 = 1;
-    emit move(axes,MAX_FREQUENCY);
+    if(!ui->traject_receiver_right->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a1 = 1;
+        emit move(axes,MAX_FREQUENCY);
+    }
 }
 
 void Dialog::on_reciever_forward_pressed()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a4 = 1;
-    emit move(axes,MAX_FREQUENCY);
+    if(!ui->traject_receiver_forward->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a4 = 1;
+        emit move(axes,MAX_FREQUENCY);
+    }
 }
 
 void Dialog::on_reciever_left_pressed()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a1 = 1;
-    emit move(axes,~MAX_FREQUENCY);
+    if(!ui->traject_receiver_left->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a1 = 1;
+        emit move(axes,~MAX_FREQUENCY);
+    }
 }
 
 // по отпусканию кнопки - остановка соответствующего перемещения
 void Dialog::on_reciever_forward_released()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a4 = 1;
-    emit stop(axes);
+    if(!ui->traject_receiver_forward->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a4 = 1;
+        emit stop(axes);
+    }
 }
 
 // остановка движения вправо
 void Dialog::on_reciever_right_released()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a1 = 1;
-    emit stop(axes);
+    if(!ui->traject_receiver_right->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a1 = 1;
+        emit stop(axes);
+    }
 }
 
 // остановка движения назад
 void Dialog::on_reciever_back_released()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a4 = 1;
-    emit stop(axes);
+    if(!ui->traject_receiver_back->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a4 = 1;
+        emit stop(axes);
+    }
 }
 
 // остановка движения влево
 void Dialog::on_reciever_left_released()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a1 = 1;
-    emit stop(axes);
+    if(!ui->traject_receiver_left->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a1 = 1;
+        emit stop(axes);
+    }
 }
 
 //************* Объект ****************//
@@ -196,10 +225,13 @@ void Dialog::on_object_right_rotate_pressed()
 
 void Dialog::on_object_down_pressed()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a2 = 1;
-    emit move_2(axes,MAX_FREQUENCY);
+    if(!ui->traject_object_down->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a2 = 1;
+        emit move_2(axes,MAX_FREQUENCY);
+    }
 }
 
 void Dialog::on_object_left_rotate_pressed()
@@ -212,10 +244,13 @@ void Dialog::on_object_left_rotate_pressed()
 
 void Dialog::on_object_up_pressed()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a2 = 1;
-    emit move_2(axes,~MAX_FREQUENCY);
+    if(!ui->traject_object_up->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a2 = 1;
+        emit move_2(axes,~MAX_FREQUENCY);
+    }
 }
 
 // по отпусканию кнопки - остановка соответствующего перемещения
@@ -229,10 +264,13 @@ void Dialog::on_object_right_rotate_released()
 
 void Dialog::on_object_down_released()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a2 = 1;
-    emit stop_2(axes);
+    if(!ui->traject_object_down->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a2 = 1;
+        emit stop_2(axes);
+    }
 }
 
 void Dialog::on_object_left_rotate_released()
@@ -245,77 +283,104 @@ void Dialog::on_object_left_rotate_released()
 
 void Dialog::on_object_up_released()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a2 = 1;
-    emit stop_2(axes);
+    if(!ui->traject_object_up->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a2 = 1;
+        emit stop_2(axes);
+    }
 }
 
 //************* Источник ****************//
 
 void Dialog::on_source_forward_pressed()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a4 = 1;
-    emit move_2(axes,MAX_FREQUENCY);
+    if(!ui->traject_source_forward->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a4 = 1;
+        emit move_2(axes,MAX_FREQUENCY);
+    }
 }
 
 void Dialog::on_source_right_pressed()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a1 = 1;
-    emit move_2(axes,MAX_FREQUENCY);
+    if(!ui->traject_source_right->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a1 = 1;
+        emit move_2(axes,MAX_FREQUENCY);
+    }
 }
 
 void Dialog::on_source_back_pressed()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a4 = 1;
-    emit move_2(axes,~MAX_FREQUENCY);
+    if(!ui->traject_source_back->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a4 = 1;
+        emit move_2(axes,~MAX_FREQUENCY);
+    }
 }
 
 void Dialog::on_source_left_pressed()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a1 = 1;
-    emit move_2(axes,~MAX_FREQUENCY);
+    if(!ui->traject_source_left->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a1 = 1;
+        emit move_2(axes,~MAX_FREQUENCY);
+    }
 }
 
 // по отпусканию кнопки - остановка соответствующего перемещения
 void Dialog::on_source_forward_released()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a4 = 1;
-    emit stop_2(axes);
+    if(!ui->traject_source_forward->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a4 = 1;
+        emit stop_2(axes);
+    }
 }
 
 void Dialog::on_source_right_released()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a1 = 1;
-    emit stop_2(axes);
+    if(!ui->traject_source_right->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a1 = 1;
+        emit stop_2(axes);
+    }
 }
 
 void Dialog::on_source_back_released()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a4 = 1;
-    emit stop_2(axes);
+    if(!ui->traject_source_back->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a4 = 1;
+        emit stop_2(axes);
+    }
 }
 
 void Dialog::on_source_left_released()
 {
-    Axes_Mask axes;
-    axes = {0};
-    axes.a1 = 1;
-    emit stop_2(axes);
+    if(!ui->traject_source_left->isChecked())
+    {
+        Axes_Mask axes;
+        axes = {0};
+        axes.a1 = 1;
+        emit stop_2(axes);
+    }
 }
 
 
@@ -331,59 +396,153 @@ void Dialog::on_single_shoot_clicked()
 // визуализация полученного снимка
 void Dialog::set_image(ushort *tData)
 {
-    if(ui->webcam_on->isChecked()) ui->webcam_on->setChecked(false);
-    qDebug() << "set image";
-    ushort * dData;
-    dData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
-    memcpy(dData, tData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
-
-    QImage image(IMAGE_WIDTH, IMAGE_HEIGHT, QImage::Format_RGB32 );
-    int pixel = 0;
-    for (int k=0;k<IMAGE_HEIGHT-1;k++)
-    {
-        for (int j=0; j<IMAGE_WIDTH-1; j++)
-        {
-            pixel = dData[(k*IMAGE_WIDTH)+j]/ 64;
-            if (pixel > 255) pixel = 255;
-            if (pixel < 0) pixel = 0;
-            image.setPixel(j,k,QColor(pixel,pixel,pixel,255).rgba());
-        }
-    }
-    lbl = new QLabel(this);
     Layout->removeWidget(CameraViewfinder);
-    Layout->addWidget(lbl);
-    QPixmap pixmap;
-    pixmap.convertFromImage(image);
-    lbl->setPixmap(pixmap);
+    Layout->addWidget(frame);
+    frame->setRAWImage(tData);
+    emit rap_off();
 }
 
 void Dialog::on_webcam_on_stateChanged(int arg1)
 {
     if(ui->webcam_on->isChecked())
     {
-        ui->scrollArea->show();
+       //ui->scrollArea->show();
         if(stat1 == 0)
         {
+           // ui->scrollArea->clearMask();
+           // Layout->removeWidget(frame);
             CameraViewfinder = new QCameraViewfinder(this);
             Camera = new QCamera(this);
-            Layout = new QVBoxLayout;
             Camera->setViewfinder(CameraViewfinder);
         }
 
         Layout->addWidget(CameraViewfinder);
         Layout->setMargin(0);
+
         if(stat1 == 0)
         {
-            ui->scrollArea->setLayout(Layout);
+        //    ui->scrollArea->setLayout(Layout);
         }
         Camera->start();
         stat1 = 1;
     }
     else
     {
+        stat1 = 0;
         Camera->stop();
         Layout->removeWidget(CameraViewfinder);
         Layout->update();
-        ui->scrollArea->hide();
+       // ui->scrollArea->hide();
+    }
+}
+
+
+// траекторные перемещения
+// источник
+void Dialog::on_source_left_clicked()
+{
+    if(ui->traject_source_left->isChecked())
+    {
+        Axes_Mask axes = {0};
+        axes.a1 = 1;
+        emit go_2(-1*ui->step_for_source_left->text().toInt(),axes);
+        qDebug() << "step_left" << -1*ui->step_for_source_left->text().toInt();
+    }
+}
+
+void Dialog::on_source_right_clicked()
+{
+    if(ui->traject_source_right->isChecked())
+    {
+        Axes_Mask axes = {0};
+        axes.a1 = 1;
+        emit go_2(ui->step_for_source_right->text().toInt(),axes);
+        qDebug() << "step_left" << ui->step_for_source_right->text().toInt();
+    }
+}
+
+void Dialog::on_source_forward_clicked()
+{
+    if(ui->traject_source_forward->isChecked())
+    {
+        Axes_Mask axes = {0};
+        axes.a4 = 1;
+        emit go_2(ui->step_for_source_forward->text().toInt(),axes);
+    }
+}
+
+void Dialog::on_source_back_clicked()
+{
+    if(ui->traject_source_back->isChecked())
+    {
+        Axes_Mask axes = {0};
+        axes.a4 = 1;
+        emit go_2(-1*ui->step_for_source_back->text().toInt(),axes);
+    }
+}
+
+// объект
+
+
+void Dialog::on_object_up_clicked()
+{
+    if(ui->traject_object_up->isChecked())
+    {
+        Axes_Mask axes = {0};
+        axes.a2 = 1;
+        emit go_2(-1*ui->step_for_object_up->text().toInt(),axes);
+    }
+}
+
+void Dialog::on_object_down_clicked()
+{
+    if(ui->traject_object_down->isChecked())
+    {
+        Axes_Mask axes = {0};
+        axes.a2 = 1;
+        emit go_2(ui->step_for_object_down->text().toInt(),axes);
+    }
+}
+
+// приемник
+
+
+void Dialog::on_reciever_left_clicked()
+{
+    if(ui->traject_receiver_left->isChecked())
+    {
+        Axes_Mask axes = {0};
+        axes.a1 = 1;
+        emit go(-1*ui->step_for_receiver_left->text().toInt(),axes);
+    }
+}
+
+void Dialog::on_reciever_right_clicked()
+{
+    if(ui->traject_receiver_right->isChecked())
+    {
+        Axes_Mask axes = {0};
+        axes.a1 = 1;
+        emit go(ui->step_for_receiver_right->text().toInt(),axes);
+    }
+}
+
+void Dialog::on_reciever_forward_clicked()
+{
+    if(ui->traject_receiver_forward->isChecked())
+    {
+        Axes_Mask axes = {0};
+        axes.a4 = 1;
+        emit go(ui->step_for_receiver_forward->text().toInt(),axes);
+    }
+}
+
+void Dialog::on_reciever_back_clicked()
+{
+    if(ui->traject_receiver_back->isChecked())
+    {
+        Axes_Mask axes = {0};
+        axes.a4 = 1;
+        emit go(-1*ui->step_for_receiver_back->text().toInt(),axes);
     }
 }

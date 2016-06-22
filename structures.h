@@ -272,5 +272,26 @@ struct Cur_Pos
     int Position_Z;
 };
 
+struct CountOfStep
+{
+    int Axe_X;
+    int Axe_Y;
+    int Axe_Z;
+};
+
+// отображение пределов перeмещения
+struct limits_position
+{
+    int Lim_Axe_0_R;
+    int Lim_Axe_0_L;
+    int Lim_Axe_1_R;
+    int Lim_Axe_1_L;
+    int Lim_Axe_2_R;
+    int Lim_Axe_2_L;
+    int CountStepOfAxe_X;
+    int CountStepOfAxe_Y;
+    int CountStepOfAxe_Z;
+};
+
 #endif // STRUCTURES
 

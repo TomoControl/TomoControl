@@ -196,6 +196,8 @@ void myFrame::setRAWImage(ushort * RAWData)
 
     scale = ((float)scrollArea->size().width()-2)/((float)rxImage.size().width());
     imageLabel->setPixmap(pixmap);
+
+    //imageLabel->setPixmap((QPixmap::fromImage(imageLabel)));
     imageLabel->resize(rxImage.size()*scale);
 
 

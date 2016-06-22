@@ -68,9 +68,9 @@
   <widget class="QPushButton" name="pushButton">
    <property name="geometry">
     <rect>
-     <x>330</x>
+     <x>530</x>
      <y>620</y>
-     <width>321</width>
+     <width>101</width>
      <height>71</height>
     </rect>
    </property>
@@ -226,7 +226,7 @@
     <rect>
      <x>140</x>
      <y>620</y>
-     <width>181</width>
+     <width>91</width>
      <height>71</height>
     </rect>
    </property>
@@ -342,11 +342,241 @@
      <rect>
       <x>0</x>
       <y>0</y>
-      <width>639</width>
-      <height>369</height>
+      <width>637</width>
+      <height>367</height>
      </rect>
     </property>
    </widget>
+  </widget>
+  <widget class="QCheckBox" name="traject_source_left">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>30</y>
+     <width>70</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="traject_source_back">
+   <property name="geometry">
+    <rect>
+     <x>20</x>
+     <y>150</y>
+     <width>70</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="traject_source_forward">
+   <property name="geometry">
+    <rect>
+     <x>210</x>
+     <y>150</y>
+     <width>70</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="traject_source_right">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>210</y>
+     <width>70</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="traject_object_up">
+   <property name="geometry">
+    <rect>
+     <x>370</x>
+     <y>30</y>
+     <width>70</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="traject_object_down">
+   <property name="geometry">
+    <rect>
+     <x>370</x>
+     <y>210</y>
+     <width>70</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="traject_receiver_forward">
+   <property name="geometry">
+    <rect>
+     <x>440</x>
+     <y>150</y>
+     <width>70</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="traject_receiver_back">
+   <property name="geometry">
+    <rect>
+     <x>630</x>
+     <y>150</y>
+     <width>70</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="traject_receiver_left">
+   <property name="geometry">
+    <rect>
+     <x>580</x>
+     <y>30</y>
+     <width>70</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QCheckBox" name="traject_receiver_right">
+   <property name="geometry">
+    <rect>
+     <x>580</x>
+     <y>210</y>
+     <width>70</width>
+     <height>17</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string/>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="step_for_source_left">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>60</y>
+     <width>30</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="step_for_object_up">
+   <property name="geometry">
+    <rect>
+     <x>370</x>
+     <y>60</y>
+     <width>30</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="step_for_object_down">
+   <property name="geometry">
+    <rect>
+     <x>370</x>
+     <y>180</y>
+     <width>30</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="step_for_receiver_right">
+   <property name="geometry">
+    <rect>
+     <x>580</x>
+     <y>180</y>
+     <width>30</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="step_for_source_right">
+   <property name="geometry">
+    <rect>
+     <x>160</x>
+     <y>180</y>
+     <width>30</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="step_for_source_back">
+   <property name="geometry">
+    <rect>
+     <x>40</x>
+     <y>150</y>
+     <width>30</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="step_for_source_forward">
+   <property name="geometry">
+    <rect>
+     <x>170</x>
+     <y>150</y>
+     <width>30</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="step_for_receiver_forward">
+   <property name="geometry">
+    <rect>
+     <x>460</x>
+     <y>150</y>
+     <width>30</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="step_for_receiver_back">
+   <property name="geometry">
+    <rect>
+     <x>590</x>
+     <y>150</y>
+     <width>30</width>
+     <height>20</height>
+    </rect>
+   </property>
+  </widget>
+  <widget class="QLineEdit" name="step_for_receiver_left">
+   <property name="geometry">
+    <rect>
+     <x>580</x>
+     <y>60</y>
+     <width>30</width>
+     <height>20</height>
+    </rect>
+   </property>
   </widget>
   <zorder>reciever_forward</zorder>
   <zorder>reciever_left</zorder>
@@ -373,6 +603,26 @@
   <zorder>U</zorder>
   <zorder>webcam_on</zorder>
   <zorder>scrollArea</zorder>
+  <zorder>traject_source_left</zorder>
+  <zorder>traject_source_back</zorder>
+  <zorder>traject_source_forward</zorder>
+  <zorder>traject_source_right</zorder>
+  <zorder>traject_object_up</zorder>
+  <zorder>traject_object_down</zorder>
+  <zorder>traject_receiver_forward</zorder>
+  <zorder>traject_receiver_back</zorder>
+  <zorder>traject_receiver_left</zorder>
+  <zorder>traject_receiver_right</zorder>
+  <zorder>step_for_source_left</zorder>
+  <zorder>step_for_object_up</zorder>
+  <zorder>step_for_object_down</zorder>
+  <zorder>step_for_receiver_right</zorder>
+  <zorder>step_for_source_right</zorder>
+  <zorder>step_for_source_back</zorder>
+  <zorder>step_for_source_forward</zorder>
+  <zorder>step_for_receiver_forward</zorder>
+  <zorder>step_for_receiver_back</zorder>
+  <zorder>step_for_receiver_left</zorder>
  </widget>
  <resources/>
  <connections/>

@@ -11,6 +11,7 @@
 #include <QLabel>
 #include <QtMultimediaWidgets/QCameraViewfinder>
 #include <QFileDialog>
+#include "myimageviewer.h"
 
 
 
@@ -33,8 +34,10 @@ public:
     QCameraViewfinder *CameraViewfinder;
     QCameraImageCapture *CameraImageCapture;
     QVBoxLayout *Layout;
+    myFrame *frame;
     QLabel *lbl;
     bool stat1;
+    ushort * imageData;
 
 signals:
     void close_dialog();
@@ -44,6 +47,9 @@ signals:
     void stop_2(Axes_Mask);
 
     void make_shoot(uchar, uchar, int);
+    void go(int,Axes_Mask);
+    void go_2(int,Axes_Mask);
+    void rap_off();
 
 public slots:
 
@@ -106,6 +112,26 @@ private slots:
     void on_single_shoot_clicked();
 
     void on_webcam_on_stateChanged(int arg1);
+
+    void on_source_left_clicked();
+
+    void on_source_right_clicked();
+
+    void on_source_forward_clicked();
+
+    void on_source_back_clicked();
+
+    void on_object_up_clicked();
+
+    void on_object_down_clicked();
+
+    void on_reciever_left_clicked();
+
+    void on_reciever_right_clicked();
+
+    void on_reciever_forward_clicked();
+
+    void on_reciever_back_clicked();
 
 private:
     Ui::Dialog *ui;

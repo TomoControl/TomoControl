@@ -15,6 +15,7 @@
 using namespace std;
 
 #include "definitions.h"
+#include "structures.h"
 
 class AlphaCam : public QObject
 {
@@ -22,7 +23,6 @@ class AlphaCam : public QObject
 public:
     explicit AlphaCam(QObject *parent = 0);
     ~AlphaCam();
-    std::string int2str(int x);
     void mySleep (uint msec);
 
     int size_of_step;
@@ -36,6 +36,7 @@ public:
 
     int bitCount;
     int m_nCCD_Width, m_nCCD_Height;
+
 
 
     typedef HRESULT (*AP_Connect)(void);
@@ -63,6 +64,10 @@ signals:
     void disignation_for_go(int , int);
     void stop_scan();
     void next_image();
+    void move_on(int,Axes_Mask);
+    void finish();
+
+
 
 public slots:
     void AcquireImage();
@@ -72,7 +77,7 @@ public slots:
     void Disconnect();
     void onXrayFound();
     void get_number_of_step(int number);
-    string RenameOfImagesTiff();
+    QString RenameOfImagesTiff();
     QString RenameOfImages();
 
 private slots:

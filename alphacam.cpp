@@ -52,12 +52,17 @@ void AlphaCam::AcquireImage()
     qDebug() << "AlphaCam::AcquireImage" << time;
 
         data = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
+
         timer = new QTimer;
+
         connect(timer, SIGNAL(timeout()), this, SLOT(WaitForExecution()));
 
         HRESULT res;
+
         res = myAPServer_AcquireDarkImage();
+
         timer->start(500);
+
 }
 
 void AlphaCam::SetAccumulationTime(int time)
@@ -85,22 +90,7 @@ void AlphaCam::WaitForExecution()
 // извлечение полученного с камеры изображения
 ushort * AlphaCam::GetData()
 {
-//    HRESULT res;
-//    res = myAPServer_ReadImage((uchar*)data);
-//    if (count_of_steps != number_of_steps)
-//    {
-//        qDebug() << "Alphacam::next_image";
-//        emit disignation_for_go(size_of_step , count_of_steps);
-//    }
-//    else
-//    {
-//        qDebug() << "Alphacam::stop_scan";
-//        emit stop_scan();
-//        size_of_step = 0;
-//        count_of_steps = 0;
-//        number_of_steps = 0;
-//    }
-//    return data;
+    return data;
 }
 
 // отключение соединения с камерой
@@ -123,13 +113,6 @@ void AlphaCam::get_number_of_step(int number)
     qDebug() << "AutoScan:: Размер одного шага" <<  size_of_step;
 }
 
-std::string AlphaCam::int2str(int x)
-{
-    std::stringstream ss;
-    ss << x;
-    return ss.str();
-}
-
 QString AlphaCam::RenameOfImages()
 {
     ImageCount ++;
@@ -145,18 +128,21 @@ QString AlphaCam::RenameOfImages()
     return FormatOfName;
 }
 
-string AlphaCam::RenameOfImagesTiff()
+QString AlphaCam::RenameOfImagesTiff()
 {
     ImageCount ++;
-    string FormatOfName;
-    FormatOfName = int2str(ImageCount);
+    QString FormatOfName = QString::number(ImageCount);
+    qDebug() << "image1" << FormatOfName;
 
     while (FormatOfName.length() <= Format_Name_Of_Image)
     {
         FormatOfName = "0" + FormatOfName;
     }
-    FormatOfName = "image_" + FormatOfName + ".tif";
+    FormatOfName.push_front("image_");
+    FormatOfName.push_back(".tif");
     if (ImageCount == number_of_steps) ImageCount = 0;
-    qDebug() << "ImageCount" << ImageCount << FormatOfName.data();
+    qDebug() << "image2" << FormatOfName;
     return FormatOfName;
 }
+
+

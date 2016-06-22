@@ -1,10 +1,10 @@
 #include "tiff_image.h"
 
-#ifdef _DEBUG
-#define new DEBUG_NEW
+//#ifdef _DEBUG
+//#define new DEBUG_NEW
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
-#endif
+//#endif
 
 #include <QDebug>
 
@@ -155,7 +155,7 @@ bool tiff_image::WriteTIFF(string name, WORD* pImage, int width, int height, int
 
 
     //stack = (BYTE*)malloc(dwLine*sizeof(BYTE));
-     stack = new BYTE [width*2];
+    stack = new BYTE[width*2];
 
     if (NULL == (stack)) { goto out; }
             // Write Image pixels
@@ -321,13 +321,16 @@ WORD tiff_image::GetNextCode(bool *bRes)
  if (pfile > pEnd) goto er;
  i = CurBit+Bits;
  code = (WORD)(*pfile++ << (CurBit+8)) >> (16-Bits);
- if (i > 16) {
+ if (i > 16)
+ {
     code |= (*pfile++ << (i-16));
     code |= (*pfile   >> (24-i));
- } else
+ }
+ else
     code |= (*pfile   >> (16-i));
  CurBit=i%8;
- if (CurBit==0) {
+ if (CurBit==0)
+ {
     pfile++;
 er:	if (pfile > pEnd) { *bRes=false; return 257; }
  }
@@ -343,14 +346,15 @@ bool tiff_image::GetData(void **s, DWORD count, long offset, BYTE* pMap, bool bM
 // else
 //    for (DWORD i=0; i<count; i+=4)
 //        *((long*)(*s)+i/4) = GetLong(pMap+offset+i, bMAC);
-// return true;
+ return true;
 }
 
 BYTE tiff_image::WriteString(WORD Code)
 {
  BYTE *v, c=dict[Code].c;
  if (Code < 256) *CurByte++=c;
- else {
+ else
+ {
    *(v=stack)=c;
    do { Code=dict[Code].prefix; *(++v)=dict[Code].c; }
    while (Code > 257);

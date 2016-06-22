@@ -22,7 +22,11 @@ SOURCES += main.cpp\
     myhistrect.cpp \
     myimageviewer.cpp \
     tiff_image.cpp \
-    dialog.cpp
+    dialog.cpp \
+    stepmotor.cpp \
+    plcmwidget.cpp \
+    plcm.cpp \
+    mltcam.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -36,13 +40,21 @@ HEADERS  += mainwindow.h \
     definitions.h \
     tiff_image.h \
     dialog.h \
-    structures.h
+    structures.h \
+    stepmotor.h \
+    plcmwidget.h \
+    plcm.h \
+    mltcam.h
 
 
 FORMS    += mainwindow.ui \
-    dialog.ui
+    dialog.ui \
+    plcmwidget.ui
 
 RESOURCES += \
     icons.qrc
 
-QMAKE_CXXFLAGS += -std=gnu++14
+INCLUDEPATH += $$quote(C:/Program Files/Pleora Technologies Inc/eBUS SDK/Includes)
+LIBS += -L$$quote(C:/Program Files/Pleora Technologies Inc/eBUS SDK/Libraries)
+
+
