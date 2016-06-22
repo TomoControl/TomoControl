@@ -19,6 +19,7 @@
 #include "definitions.h"
 #include "tiff_image.h"
 #include "dialog.h"
+#include "dialog.h"
 
 
 
