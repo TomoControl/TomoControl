@@ -30,6 +30,7 @@ public:
 
     ushort * data;
     ushort ImageCount;
+    ushort Counter;
 
     bool libStatus;
     QTimer * timer;

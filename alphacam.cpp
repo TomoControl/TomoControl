@@ -35,6 +35,7 @@ AlphaCam::AlphaCam(QObject *parent) : QObject(parent)
     number_of_steps = 0;
     count_of_steps = 0;
     ImageCount = 0;
+    Counter = 0;
 }
 
 AlphaCam::~AlphaCam()
@@ -77,10 +78,21 @@ void AlphaCam::WaitForExecution()
     HRESULT res;
     res = myAPServer_ExecutionStatus();
     qDebug() << "res" << res;
+    if (res != 0)
+    {
+        Counter++;
+        if(Counter > 15)
+        {
+            Counter = 0;
+            AcquireImage();
+        }
+    }
+
     if (res == 0)
     {
         qDebug() << "AlphaCam::Статус выполнения:" << res;
         res = myAPServer_ReadImage((uchar*)data);
+        Counter = 0;
         emit GetDataComplete(data);
         timer->stop();
         delete timer;
