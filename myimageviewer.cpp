@@ -167,8 +167,8 @@ void myFrame::setImage(ushort* raw)
 
 void myFrame::setRAWImage(ushort * RAWData)
 {
-    imageData = new ushort[IMAGE_HEIGHT*IMAGE_WIDTH];
-    memcpy(imageData, RAWData, IMAGE_HEIGHT*IMAGE_WIDTH*2);
+    //imageData = new ushort[IMAGE_HEIGHT*IMAGE_WIDTH];
+    //memcpy(imageData, RAWData, IMAGE_HEIGHT*IMAGE_WIDTH*2);
     quint8 * line = rxImage.scanLine(0);
     int stride =  rxImage.bytesPerLine();
 
@@ -178,7 +178,7 @@ void myFrame::setRAWImage(ushort * RAWData)
         quint8 * pix = line;
         for ( int x = 0; x < rxImage.width(); ++x, pix += 1)
         {
-            pixel  = imageData[(y*IMAGE_WIDTH)+x]/64;
+            pixel  = RAWData[(y*IMAGE_WIDTH)+x]/64;
             if (pixel > 255)
             {
                 pixel = 255;
@@ -209,7 +209,7 @@ void myFrame::setRAWImage(ushort * RAWData)
     {
         for ( int x = 0; x < rxImage.width(); x++)
         {
-            a[imageData[(y*IMAGE_WIDTH)+x]]++;
+            a[RAWData[(y*IMAGE_WIDTH)+x]]++;
         }
     }
     emit histCalculated(a);

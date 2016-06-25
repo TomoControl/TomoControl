@@ -63,6 +63,8 @@ public:
     int avFirstImage;
     int step_size;
 
+    QImage rxImage;
+
     bool status , XrayStatus;
 
     uchar waste;

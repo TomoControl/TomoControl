@@ -17,6 +17,9 @@ MainWindow::MainWindow(QWidget *parent) :
     step_size = 5000;
     cent_2 = 0;
 
+    QImage image(IMAGE_WIDTH, IMAGE_HEIGHT, QImage::Format_Indexed8);
+    rxImage = image;
+
     // графический интерфейс
     ui->setupUi(this);
     ui->with_rotate->setChecked(true);
@@ -37,18 +40,18 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // инициализация драйверов ШД
     stepmotor = new stepmotor_rotate;
-    stepmotor_2 = new stepmotor_rotate;
+    //stepmotor_2 = new stepmotor_rotate;
     Source = ("192.168.10.1");
     SourcePort = 1075;
-    Destination = ("192.168.10.11");
+    Destination = ("192.168.10.10");
     DestinationPort = 5000;
     uchar ControlNum;
     ControlNum = 1;
     stepmotor->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
     SourcePort = 1234;
-    Destination = ("192.168.10.10");
+    Destination = ("192.168.10.11");
     ControlNum = 2;
-    stepmotor_2->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
+    //stepmotor_2->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
 
     Timer = new QTimer;
     QObject::connect(Timer , SIGNAL(timeout()) , this, SLOT(myTimer()));
@@ -56,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // инициализация приемника РИ
     cam = new MLTCam;
+    darkData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
     //cam = new AlphaCam;
 
     //ui->Start_AutoScan->setDisabled(true);
@@ -66,7 +70,6 @@ MainWindow::MainWindow(QWidget *parent) :
     // установление соединений
     connect(frame, SIGNAL(histCalculated(ushort*)), graphicsScene, SLOT(onHistCalculated(ushort*)));
     connect(graphicsScene, SIGNAL(changeHistOutput(int,int)), frame, SLOT(onChangeHistogrammWidget(int,int)));
-
 }
 
 MainWindow::~MainWindow()
@@ -79,16 +82,15 @@ MainWindow::~MainWindow()
     Timer->stop();
     QObject::disconnect(Timer , SIGNAL(timeout()) , this , SLOT(myTimer()));
     stepmotor->go_emergency();
-    stepmotor_2->go_emergency();
+    //stepmotor_2->go_emergency();
 
     delete stepmotor;
-    delete stepmotor_2;
+    //delete stepmotor_2;
     delete Timer;
 
 
     // отключение и осовобождение памяти для приемника РИ
 
-    cam->Disconnect();//???
     delete cam;
 
     // отключение и осовобождение памяти для источника РИ
@@ -106,7 +108,7 @@ void MainWindow::myTimer()    //действие по таймеру
     show_current_position show, show_2;
 
     show = stepmotor->get_current_position();
-    show_2 = stepmotor_2->get_current_position();
+    //show_2 = stepmotor_2->get_current_position();
    // show_2.Position_1 = show_2.Position_3;
 
 //    show.Position_1 /= 40;
@@ -153,10 +155,10 @@ void MainWindow::on_handle_clicked()
     connect(dialog,SIGNAL(make_shoot(uchar,uchar,int)),this,SLOT(make_shoot(uchar,uchar,int)));
     connect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor,SLOT(manual_movement(Axes_Mask,int)));
     connect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor,SLOT(stop_movement(Axes_Mask)));
-    connect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
-    connect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
+    //connect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
+   // connect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
     connect(dialog,SIGNAL(go(int,Axes_Mask)),stepmotor,SLOT(go_to(int,Axes_Mask)));
-    connect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
+    //connect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
 
     if(!ui->xray_signal->isChecked())
     {
@@ -190,10 +192,10 @@ void MainWindow::close_dialog()
     disconnect(dialog,SIGNAL(close_dialog()),this,SLOT(close_dialog()));
     disconnect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor,SLOT(manual_movement(Axes_Mask,int)));
     disconnect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor,SLOT(stop_movement(Axes_Mask)));
-    disconnect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
-    disconnect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
+    //disconnect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
+    //disconnect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
     disconnect(dialog,SIGNAL(go(int,Axes_Mask)),stepmotor,SLOT(go_to(int,Axes_Mask)));
-    disconnect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
+    //disconnect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
     disconnect(rap, SIGNAL(xrayFound()), cam, SLOT(AcquireImage()));
     disconnect(cam, SIGNAL(GetDataComplete(ushort*)),dialog,SLOT(set_image(ushort*)));
     disconnect(dialog,SIGNAL(rap_off()),rap,SLOT(off()));
@@ -265,7 +267,6 @@ void MainWindow::on_Start_AutoScan_clicked()
 
 void MainWindow::MakeDarkImage()
 {
-    darkData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
     selected_mode = 4;
     cam->AcquireImage();
 }
@@ -304,7 +305,8 @@ void MainWindow::onGetData(ushort * tdata)
         ushort * dData;
         dData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
         memcpy(dData, tdata, IMAGE_WIDTH*IMAGE_HEIGHT*2);
-        delete tdata;
+        //frame->setRAWImage(dData);
+
 
         switch (selected_mode)
         {
@@ -337,7 +339,7 @@ void MainWindow::onGetData(ushort * tdata)
             // расчет среднего значения пиксела
             for (int k = 0; k < 50; k++)
             {
-                for (int j=0; j<50; j++)
+                for (int  j = 0; j < 50; j++)
                 {
                     pixel = dData[(k*IMAGE_WIDTH)+j];
                     avpixel = (avpixel + pixel)/2;
@@ -398,7 +400,7 @@ void MainWindow::onGetData(ushort * tdata)
                     qDebug() << "Cканирование:: Сохранение изображения:: Ошибка открытия файла";
                 }
                 file.write((char*)dData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
-                frame->setRAWImage(dData);
+                //frame->setRAWImage(dData);
                 CountOfShoot++;
             }
 
@@ -419,7 +421,7 @@ void MainWindow::onGetData(ushort * tdata)
             calb_step ++;
             qDebug() << "move_solution";
 
-            frame->setRAWImage(dData);
+            //frame->setRAWImage(dData);
 
             int left_border = 0, right_border = 0, center = 0;
             bool left_c = 1, right_c = 1;
@@ -470,10 +472,10 @@ void MainWindow::onGetData(ushort * tdata)
                 qDebug() << "calb step = 1";
                 int step;
                 Axes_Mask axes;
-                axes = stepmotor_2->reset_axes_mask();
+                //axes = stepmotor_2->reset_axes_mask();
                 axes.a4 = 1;
                 step = 10000;
-                stepmotor_2->go_to_for_calb(step,axes);
+                //stepmotor_2->go_to_for_calb(step,axes);
                 break;
             }
             case 2:
@@ -481,19 +483,19 @@ void MainWindow::onGetData(ushort * tdata)
                 qDebug() << "calb step = 2";
                 int step;
                 Axes_Mask axes;
-                axes = stepmotor_2->reset_axes_mask();
+                //axes = stepmotor_2->reset_axes_mask();
                 axes.a1 = 1;
 
                 if(difference > 5 )
                 {step = ~step_size; qDebug() << difference << "difference";}
                 if(difference < -5 ) {step = step_size;qDebug() << difference << "difference_22222";}
-                stepmotor_2->go_to_for_calb(step,axes);
+                //stepmotor_2->go_to_for_calb(step,axes);
 
                 // возвращение на первую линию
                 step = ~10000;
-                axes = stepmotor_2->reset_axes_mask();
+                //axes = stepmotor_2->reset_axes_mask();
                 axes.a4 = 1;
-                stepmotor_2->go_to(step,axes);
+                //stepmotor_2->go_to(step,axes);
                 calb_step = 0;
                 break;
             }
@@ -524,37 +526,44 @@ void MainWindow::onGetData(ushort * tdata)
             break;
         }
         case 3:
-            frame->setRAWImage(dData);
+            //frame->setRAWImage(dData);
             rap->off();
             break;
         case 4:
             if (CountOfDarkImage < NUMBER_OF_DARK_IMAGE)
             {
+
                 CountOfDarkImage ++;
-                for (int k = 0; k < IMAGE_HEIGHT - 1; k++)
-                {
-                    for (int j = 0; j < IMAGE_WIDTH - 1; j++)
-                    { 
-                        if(CountOfDarkImage != 1) darkData[(k * IMAGE_WIDTH)+ j] = dData[(k * IMAGE_WIDTH) + j];
-                        else
-                        {
-                            darkData[(k * IMAGE_WIDTH)+ j] += dData[(k * IMAGE_WIDTH) + j];
-                            darkData[(k * IMAGE_WIDTH)+ j] /= 2;
-                        }
-                    }
-                }
-                cam->AcquireImage();
-            }
-            else
-            {
+                qDebug() << "count" << CountOfDarkImage;
+//                for (int k = 0; k < IMAGE_HEIGHT - 1; k++)
+//                {
+//                    for (int j = 0; j < IMAGE_WIDTH - 1; j++)
+//                    {
+//                        if(CountOfDarkImage == 1) darkData[(k * IMAGE_WIDTH)+ j] = dData[(k * IMAGE_WIDTH) + j];
+//                        else
+//                        {
+//                            darkData[(k * IMAGE_WIDTH)+ j] += dData[(k * IMAGE_WIDTH) + j];
+//                            darkData[(k * IMAGE_WIDTH)+ j] /= 2;
+//                        }
+//                    }
+//                }
+
                 QString NameForSaveImage;
-                NameForSaveImage = "DarkImage";
+                NameForSaveImage = QString("DarkImage%1.RAW").arg(CountOfDarkImage);
                 QFile file(FileDirectory + NameForSaveImage);
                 if (!file.open(QIODevice::WriteOnly))
                 {
                     qDebug() << "Сканирование:: Сохранение темнового изображения:: Ошибка открытия файла";
                 }
-                file.write((char*)darkData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
+                file.write((char*)dData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
+
+                qDebug() << "next dark";
+                cam->AcquireImage();
+            }
+            else
+            {
+                qDebug() << "else dark";
+
                 selected_mode = 1;
                 CountOfDarkImage = 0;
                 StartAutoScan();
@@ -634,9 +643,9 @@ void MainWindow::convertToTiff()
     int max = 0;
     for (uint i = 1; i <= CountOfImage; i++)
     {
-        if (i < 10) CurrentPicture = QString("/image_000%1.raw").arg(i);
-        if (i >=10 && i < 100) CurrentPicture = QString("/image_00%1.raw").arg(i);
-        if (i >=100) CurrentPicture = QString("/image_0%1.raw").arg(i);
+        if (i < 10) CurrentPicture = QString("image_000%1.raw").arg(i);
+        if (i >=10 && i < 100) CurrentPicture = QString("image_00%1.raw").arg(i);
+        if (i >=100) CurrentPicture = QString("image_0%1.raw").arg(i);
         QFile file(FileDirectory + CurrentPicture);
         if (!file.open(QIODevice::ReadOnly))
         {
@@ -920,9 +929,9 @@ void MainWindow::on_Calibrate_clicked()
     AxeOfCalb_3 = 0;
     stepmotor->setCalibrAxe(AxeOfCalb_1 , AxeOfCalb_2 , AxeOfCalb_3);
     AxeOfCalb_3 = 1;
-    stepmotor_2->setCalibrAxe(AxeOfCalb_1 , AxeOfCalb_2 , AxeOfCalb_3);
+    //stepmotor_2->setCalibrAxe(AxeOfCalb_1 , AxeOfCalb_2 , AxeOfCalb_3);
     stepmotor->calibrate();
-    stepmotor_2->calibrate();
+    //stepmotor_2->calibrate();
 }
 
 
@@ -933,7 +942,7 @@ void MainWindow::source_calibration()
         // установление соединений для автосканирования
         connect(rap, SIGNAL(xrayFound()), cam, SLOT(AcquireImage()));
         connect(cam, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
-        connect(stepmotor_2,SIGNAL(continue_move()),cam,SLOT(AcquireImage()));
+        //connect(stepmotor_2,SIGNAL(continue_move()),cam,SLOT(AcquireImage()));
         connect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
         selected_mode  = 2;
         status = 1;
@@ -962,7 +971,7 @@ void MainWindow::finish_calibration()
     rap->off();
     disconnect(rap, SIGNAL(xrayFound()), cam, SLOT(AcquireImage()));
     disconnect(cam, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
-    disconnect(stepmotor_2,SIGNAL(continue_move()),cam,SLOT(AcquireImage()));
+    //disconnect(stepmotor_2,SIGNAL(continue_move()),cam,SLOT(AcquireImage()));
     disconnect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
 
     // выключение источника, сброс индикации

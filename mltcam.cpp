@@ -30,6 +30,10 @@ MLTCam::MLTCam(QObject *parent) : QObject(parent)
         qDebug() <<   "MLTCam::No device found";
     }
 
+
+    lResult = lDevice->GetParameters()->GetIntegerValue("Height",height);
+    if ( height !=  2944) InitializationCam();
+
     lStream = OpenStream( lDeviceInfo);
     qDebug() << "MLTCam::OpenStream";
     ConfigureStream( lDevice, lStream );
@@ -37,7 +41,7 @@ MLTCam::MLTCam(QObject *parent) : QObject(parent)
     CreateStreamBuffers( lDevice, lStream, &lBufferList );
     qDebug() << "MLTCam::CreateStreamBuffers";
 
-    InitializationCam();
+
 }
 
 MLTCam::~MLTCam()
@@ -361,6 +365,7 @@ void MLTCam::WaitForExecution()
 
 }
 
+
 void MLTCam::FreeStreamBuffers( BufferList *aBufferList )
 {
     // Go through the buffer list
@@ -374,6 +379,7 @@ void MLTCam::FreeStreamBuffers( BufferList *aBufferList )
     // Clear the buffer list
     aBufferList->clear();
 }
+
 
 QString MLTCam::RenameOfImages()
 {

@@ -23,7 +23,6 @@ SOURCES += main.cpp\
     myimageviewer.cpp \
     tiff_image.cpp \
     dialog.cpp \
-    stepmotor.cpp \
     plcmwidget.cpp \
     plcm.cpp \
     mltcam.cpp
@@ -41,7 +40,6 @@ HEADERS  += mainwindow.h \
     tiff_image.h \
     dialog.h \
     structures.h \
-    stepmotor.h \
     plcmwidget.h \
     plcm.h \
     mltcam.h
@@ -54,7 +52,7 @@ FORMS    += mainwindow.ui \
 RESOURCES += \
     icons.qrc
 
-INCLUDEPATH += $$quote(C:/Program Files/Pleora Technologies Inc/eBUS SDK/Includes)
-LIBS += -L$$quote(C:/Program Files/Pleora Technologies Inc/eBUS SDK/Libraries)
+INCLUDEPATH += $$quote(C:/Program Files (x86)/Pleora Technologies Inc/eBUS SDK/Includes)
+LIBS += -L$$quote(C:/Program Files (x86)/Pleora Technologies Inc/eBUS SDK/Libraries)
 
 

@@ -142,7 +142,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>70</string>
+           <string>90</string>
           </property>
          </widget>
          <widget class="QLineEdit" name="I_Auto">
@@ -155,7 +155,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>25</string>
+           <string>35</string>
           </property>
          </widget>
          <widget class="QLabel" name="Current_U">
@@ -275,7 +275,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>2000</string>
+           <string>3000</string>
           </property>
          </widget>
          <widget class="QLabel" name="label_7">
@@ -301,7 +301,7 @@
            </rect>
           </property>
           <property name="text">
-           <string>50</string>
+           <string>500</string>
           </property>
          </widget>
          <widget class="QLabel" name="current_step">
@@ -732,10 +732,10 @@
           <bool>false</bool>
          </property>
          <property name="currentText">
-          <string notr="true">MltCam</string>
+          <string notr="true">AlphaCam</string>
          </property>
          <property name="currentIndex">
-          <number>1</number>
+          <number>0</number>
          </property>
          <property name="duplicatesEnabled">
           <bool>false</bool>

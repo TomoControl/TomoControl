@@ -18,11 +18,15 @@
 
 #include <PvDeviceFinderWnd.h>
 
-#include "definitions.h"
+#include <definitions.h>
 
 
+
+//#define BUFFER_COUNT ( 16 )
 typedef std::list<PvBuffer *> BufferList;
 
+#define IMAGE_WIDTH 2304
+#define IMAGE_HEIGHT 2944
 
 class MLTCam : public QObject
 {
@@ -38,20 +42,21 @@ public:
     void Acquire( PvDevice *aDevice, PvStream *aStream );
     void FreeStreamBuffers( BufferList *aBufferList );
 
+
     ushort * data;
     QTimer * timer;
-
-    int number_of_steps, count_of_steps;
-    ushort ImageCount;
 
     PvDevice * lDevice;
     PvDeviceInfo* lDeviceInfo;
     PvBuffer* gPvBuffers;
     PvStream* lStream;
     uint32_t gBufferCount;
-    int64_t lWidth, lHeight;
+    int64_t lWidth, lHeight, height;
 
     BufferList lBufferList;
+
+    int number_of_steps;
+    ushort ImageCount;
 
 signals:
     void GetDataComplete(ushort*);
@@ -59,9 +64,10 @@ signals:
 public slots:
     void AcquireImage();
     void SetAccumulationTime(int time);
-
     QString RenameOfImagesTiff();
     QString RenameOfImages();
+
+
 private slots:
     void WaitForExecution();
 };
