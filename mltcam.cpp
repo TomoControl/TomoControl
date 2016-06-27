@@ -1,6 +1,6 @@
 #include "mltcam.h"
 
-MLTCam::MLTCam(QObject *parent) : QObject(parent)
+MLTCam::MLTCam()
 {
     data = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
 

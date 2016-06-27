@@ -25,7 +25,8 @@ SOURCES += main.cpp\
     dialog.cpp \
     plcmwidget.cpp \
     plcm.cpp \
-    mltcam.cpp
+    mltcam.cpp \
+    cam.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -42,7 +43,8 @@ HEADERS  += mainwindow.h \
     structures.h \
     plcmwidget.h \
     plcm.h \
-    mltcam.h
+    mltcam.h \
+    cam.h
 
 
 FORMS    += mainwindow.ui \

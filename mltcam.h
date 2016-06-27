@@ -19,20 +19,16 @@
 #include <PvDeviceFinderWnd.h>
 
 #include <definitions.h>
+#include "cam.h"
 
 
-
-//#define BUFFER_COUNT ( 16 )
 typedef std::list<PvBuffer *> BufferList;
 
-#define IMAGE_WIDTH 2304
-#define IMAGE_HEIGHT 2944
 
-class MLTCam : public QObject
+class MLTCam : public cam
 {
-    Q_OBJECT
 public:
-    explicit MLTCam(QObject *parent = 0);
+    MLTCam();
     ~MLTCam();
     void InitializationCam();
     void mySleep(uint msec);
@@ -59,13 +55,13 @@ public:
     ushort ImageCount;
 
 signals:
-    void GetDataComplete(ushort*);
+    virtual void GetDataComplete(ushort*);
 
 public slots:
-    void AcquireImage();
-    void SetAccumulationTime(int time);
-    QString RenameOfImagesTiff();
-    QString RenameOfImages();
+    virtual void AcquireImage();
+    virtual void SetAccumulationTime(int time);
+    virtual QString RenameOfImagesTiff();
+    virtual QString RenameOfImages();
 
 
 private slots:

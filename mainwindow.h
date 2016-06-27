@@ -22,6 +22,7 @@
 #include "dialog.h"
 #include "plcmwidget.h"
 #include "mltcam.h"
+#include "cam.h"
 
 
 namespace Ui {
@@ -39,7 +40,8 @@ public:
     QSettings * settingtxt;
     stepmotor_rotate * stepmotor, * stepmotor_2;
     //AlphaCam * cam;
-    MLTCam * cam; // ???
+    //MLTCam * cam; // ???
+    cam *reciever;
     RAPEltechMED * rap;
     QTimer * Timer;
     QString FileDirectory;

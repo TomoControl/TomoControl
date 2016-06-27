@@ -16,13 +16,15 @@ using namespace std;
 
 #include "definitions.h"
 #include "structures.h"
+#include "cam.h"
 
-class AlphaCam : public QObject
+class AlphaCam : public cam
 {
-    Q_OBJECT
+
 public:
-    explicit AlphaCam(QObject *parent = 0);
+     AlphaCam();
     ~AlphaCam();
+
     void mySleep (uint msec);
 
     int size_of_step;
@@ -37,8 +39,6 @@ public:
 
     int bitCount;
     int m_nCCD_Width, m_nCCD_Height;
-
-
 
     typedef HRESULT (*AP_Connect)(void);
     typedef HRESULT (*AP_XRayShot)(void);
@@ -59,27 +59,16 @@ public:
     AP_SetAccumulationTime myAPServer_SetAccumulationTime;
 
 signals:
-    void ExecutionComplete();
-    void GetDataComplete(ushort*);
-    void compare_coordinates();
-    void disignation_for_go(int , int);
-    void stop_scan();
-    void next_image();
-    void move_on(int,Axes_Mask);
-    void finish();
+    virtual void GetDataComplete(ushort*);
 
 
 
 public slots:
-    void AcquireImage();
-    void SetAccumulationTime(int time);
-    ushort * GetData();
-
-    void Disconnect();
-    void onXrayFound();
-    void get_number_of_step(int number);
-    QString RenameOfImagesTiff();
-    QString RenameOfImages();
+    virtual void AcquireImage();
+    virtual void SetAccumulationTime(int time);
+    virtual void Disconnect();
+    virtual QString RenameOfImagesTiff();
+    virtual QString RenameOfImages();
 
 private slots:
     void WaitForExecution();

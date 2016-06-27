@@ -58,8 +58,8 @@ MainWindow::MainWindow(QWidget *parent) :
     Timer->start(200);
 
     // инициализация приемника РИ
-    cam = new MLTCam;
-    darkData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
+    //cam = new MLTCam;
+
     //cam = new AlphaCam;
 
     //ui->Start_AutoScan->setDisabled(true);
@@ -999,18 +999,19 @@ void MainWindow::on_pushButton_4_clicked()
 void MainWindow::on_comboBox_2_currentIndexChanged(int index)
 {
     ui->comboBox_2->removeItem(2);
-   // ui->comboBox_2->repaint();
+    ui->comboBox_2->repaint();
     switch (index)
     {
     case 0:
         qDebug() << "text0" << ui->comboBox_2->currentText();
-        // alphacam = new AlphaCam;
-        selected_cam = 1;
+        reciever = new AlphaCam;
+        //selected_cam = 1;
         break;
     case 1:
         qDebug() << "text1" << ui->comboBox_2->currentText();
-      //  extern cam = new AlphaCam;
-        selected_cam = 2;
+        reciever = new MLTCam;
+        darkData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
+        //selected_cam = 2;
         break;
     default:
         break;

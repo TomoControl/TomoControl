@@ -3,7 +3,7 @@
 
 
 
-AlphaCam::AlphaCam(QObject *parent) : QObject(parent)
+AlphaCam::AlphaCam()
 {
     libStatus = false;
 
@@ -99,30 +99,11 @@ void AlphaCam::WaitForExecution()
     }
 }
 
-// извлечение полученного с камеры изображения
-ushort * AlphaCam::GetData()
-{
-    return data;
-}
-
 // отключение соединения с камерой
 void AlphaCam::Disconnect()
 {
     qDebug() << "AlphaCam::Отключение соединения";
     myAPServer_Disconnect();
-}
-
-void AlphaCam::onXrayFound()
-{
-    qDebug() << "AlphaCam::onXrayFound";
-    AcquireImage();
-}
-
-void AlphaCam::get_number_of_step(int number)
-{
-    number_of_steps = number;
-    size_of_step = FULL_TURN / number;
-    qDebug() << "AutoScan:: Размер одного шага" <<  size_of_step;
 }
 
 QString AlphaCam::RenameOfImages()
