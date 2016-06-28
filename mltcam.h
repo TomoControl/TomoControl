@@ -54,18 +54,15 @@ public:
     int number_of_steps;
     ushort ImageCount;
 
-signals:
-    virtual void GetDataComplete(ushort*);
-
 public slots:
     virtual void AcquireImage();
     virtual void SetAccumulationTime(int time);
     virtual QString RenameOfImagesTiff();
     virtual QString RenameOfImages();
-
+    virtual void Disconnect();
 
 private slots:
-    void WaitForExecution();
+    virtual void WaitForExecution();
 };
 
 #endif // MLTCAM_H

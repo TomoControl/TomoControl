@@ -10,14 +10,17 @@ public:
     explicit cam(QObject *parent = 0);
 
 signals:
-    virtual void GetDataComplete(ushort*);
+     void GetDataComplete(ushort*);
 
 public slots:
-    virtual void AcquireImage();
-    virtual void SetAccumulationTime(int time);
-    virtual void Disconnect();
-    virtual QString RenameOfImagesTiff();
-    virtual QString RenameOfImages();
+    virtual void AcquireImage()=0;
+    virtual void SetAccumulationTime(int time)=0;
+    virtual void Disconnect()=0;
+    virtual QString RenameOfImagesTiff()=0;
+    virtual QString RenameOfImages()=0;
+
+private slots:
+    virtual void WaitForExecution()=0;
 };
 
 #endif // CAM_H

@@ -319,7 +319,7 @@ void MLTCam::Acquire( PvDevice *aDevice, PvStream *aStream )
 
 
     timer = new QTimer;
-    connect(timer, SIGNAL(timeout()), this, SLOT(WaitForExecution()));
+    connect(timer, SIGNAL(timeout()), SLOT(WaitForExecution()));
     timer->start(100);
 
     // Abort all buffers from the stream and dequeue
@@ -411,4 +411,9 @@ QString MLTCam::RenameOfImagesTiff()
     if (ImageCount == number_of_steps) ImageCount = 0;
     qDebug() << "image2" << FormatOfName;
     return FormatOfName;
+}
+
+void MLTCam::Disconnect()
+{
+    qDebug() << "mltCam::Отключение соединения";
 }

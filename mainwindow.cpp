@@ -91,7 +91,7 @@ MainWindow::~MainWindow()
 
     // отключение и осовобождение памяти для приемника РИ
 
-    delete cam;
+    delete reciever;
 
     // отключение и осовобождение памяти для источника РИ
     rap->ClosePort();
@@ -162,11 +162,11 @@ void MainWindow::on_handle_clicked()
 
     if(!ui->xray_signal->isChecked())
     {
-        connect(rap, SIGNAL(xrayFound()), cam, SLOT(AcquireImage()));
+        connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
         connect(dialog,SIGNAL(rap_off()),rap,SLOT(off()));
     }
-    connect(cam, SIGNAL(GetDataComplete(ushort*)),dialog,SLOT(set_image(ushort*)));
-    connect(cam, SIGNAL(GetDataComplete(ushort*)),this,SLOT(onGetData(ushort*)));
+    connect(reciever, SIGNAL(GetDataComplete(ushort*)),dialog,SLOT(set_image(ushort*)));
+    connect(reciever, SIGNAL(GetDataComplete(ushort*)),this,SLOT(onGetData(ushort*)));
 
     dialog->set_icons();
     dialog->show();
@@ -174,21 +174,21 @@ void MainWindow::on_handle_clicked()
 
 void MainWindow::make_shoot(uchar U, uchar I, int time)
 {
-    cam->SetAccumulationTime(time);
+    reciever->SetAccumulationTime(time);
     if(!ui->xray_signal->isChecked())
     {
        rap->on(U, I);
     }
-    else cam->AcquireImage();
+    else reciever->AcquireImage();
 }
 
 // деактивация диалогового окна
 void MainWindow::close_dialog()
 {
     selected_mode = 0;
-    disconnect(rap, SIGNAL(xrayFound()), cam, SLOT(AcquireImage()));
+    disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
     disconnect(dialog,SIGNAL(make_shoot(uchar,uchar,int)),this,SLOT(make_shoot(uchar,uchar,int)));
-    disconnect(cam, SIGNAL(GetDataComplete(ushort*)),dialog,SLOT(set_image(ushort*)));
+    disconnect(reciever, SIGNAL(GetDataComplete(ushort*)),dialog,SLOT(set_image(ushort*)));
     disconnect(dialog,SIGNAL(close_dialog()),this,SLOT(close_dialog()));
     disconnect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor,SLOT(manual_movement(Axes_Mask,int)));
     disconnect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor,SLOT(stop_movement(Axes_Mask)));
@@ -196,10 +196,10 @@ void MainWindow::close_dialog()
     //disconnect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
     disconnect(dialog,SIGNAL(go(int,Axes_Mask)),stepmotor,SLOT(go_to(int,Axes_Mask)));
     //disconnect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
-    disconnect(rap, SIGNAL(xrayFound()), cam, SLOT(AcquireImage()));
-    disconnect(cam, SIGNAL(GetDataComplete(ushort*)),dialog,SLOT(set_image(ushort*)));
+    disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
+    disconnect(reciever, SIGNAL(GetDataComplete(ushort*)),dialog,SLOT(set_image(ushort*)));
     disconnect(dialog,SIGNAL(rap_off()),rap,SLOT(off()));
-    disconnect(cam, SIGNAL(GetDataComplete(ushort*)),this,SLOT(onGetData(ushort*)));
+    disconnect(reciever, SIGNAL(GetDataComplete(ushort*)),this,SLOT(onGetData(ushort*)));
     dialog->hide();
 }
 
@@ -233,13 +233,13 @@ void MainWindow::on_Start_AutoScan_clicked()
         // установление соединений для автосканирования
         if(!ui->xray_signal->isChecked())
         {
-            connect(rap, SIGNAL(xrayFound()), cam, SLOT(AcquireImage()));
+            connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
         }
-        connect(cam, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
+        connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
         connect(this, SIGNAL(nextStep(int,int)), stepmotor, SLOT(calculate_go(int,int)));
-        connect(stepmotor, SIGNAL(continue_move()), cam, SLOT(AcquireImage()));
+        connect(stepmotor, SIGNAL(continue_move()), reciever, SLOT(AcquireImage()));
         connect(this, SIGNAL(finishAutoScan()), this, SLOT(finish_autoscan()));
-        connect(this,SIGNAL(retry_acquire_image()),cam,SLOT(AcquireImage()));
+        connect(this,SIGNAL(retry_acquire_image()),reciever,SLOT(AcquireImage()));
 
         status = 1;
         CountOfShoot = 0;
@@ -247,7 +247,7 @@ void MainWindow::on_Start_AutoScan_clicked()
 
         // установка времени экспозиции камеры
         AccumulationTime = ui->Exposure->text().toInt();
-        cam->SetAccumulationTime(AccumulationTime);
+        reciever->SetAccumulationTime(AccumulationTime);
         // включение источника РИ
 
         if (ui->comboBox_2->currentIndex() == 1)
@@ -268,7 +268,7 @@ void MainWindow::on_Start_AutoScan_clicked()
 void MainWindow::MakeDarkImage()
 {
     selected_mode = 4;
-    cam->AcquireImage();
+    reciever->AcquireImage();
 }
 
 void MainWindow::StartAutoScan()
@@ -277,18 +277,18 @@ void MainWindow::StartAutoScan()
     {
         rap->on((uchar)ui->U_Auto->text().toShort(), (uchar)ui->I_Auto->text().toShort());
     }
-    else cam->AcquireImage();
+    else reciever->AcquireImage();
 }
 
 void MainWindow::finish_autoscan()
 {
     // отключение соединений, необходимых для автосканирования
-    disconnect(rap, SIGNAL(xrayFound()), cam, SLOT(AcquireImage()));
-    disconnect(cam, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
+    disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
+    disconnect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
     disconnect(this, SIGNAL(nextStep(int,int)), stepmotor, SLOT(calculate_go(int,int)));
-    disconnect(stepmotor, SIGNAL(continue_move()), cam, SLOT(AcquireImage()));
+    disconnect(stepmotor, SIGNAL(continue_move()), reciever, SLOT(AcquireImage()));
     disconnect(this, SIGNAL(finishAutoScan()), rap, SLOT(off()));
-    disconnect(this,SIGNAL(retry_acquire_image()),cam,SLOT(AcquireImage()));
+    disconnect(this,SIGNAL(retry_acquire_image()),reciever,SLOT(AcquireImage()));
 
     // выключение источника, сброс индикации
     rap->off();
@@ -358,13 +358,13 @@ void MainWindow::onGetData(ushort * tdata)
                 if (avpixel - avFirstImage > ui->Compare->text().toInt())
                 {
                     AccumulationTime += ui->TimeCorrect->text().toInt();
-                    cam->SetAccumulationTime(AccumulationTime);
+                    reciever->SetAccumulationTime(AccumulationTime);
                     needRenew = 1;
                 }
                 else if (avpixel - avFirstImage < (-1*ui->Compare->text().toInt()))
                 {
                     AccumulationTime -= ui->TimeCorrect->text().toInt();
-                    cam->SetAccumulationTime(AccumulationTime);
+                    reciever->SetAccumulationTime(AccumulationTime);
                     needRenew = 1;
                 }
 
@@ -393,7 +393,7 @@ void MainWindow::onGetData(ushort * tdata)
 
                 // сохранение изображений в raw-формате
                 QString NameForSaveImage;
-                NameForSaveImage = cam->RenameOfImages();
+                NameForSaveImage = reciever->RenameOfImages();
                 QFile file(FileDirectory + NameForSaveImage);
                 if (!file.open(QIODevice::WriteOnly))
                 {
@@ -519,7 +519,7 @@ void MainWindow::onGetData(ushort * tdata)
                 cent_1 = 0;
                 cent_2 = 0;
                 step_size /= 2;
-                cam->AcquireImage();
+                reciever->AcquireImage();
             }
 
 
@@ -558,7 +558,7 @@ void MainWindow::onGetData(ushort * tdata)
                 file.write((char*)dData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
 
                 qDebug() << "next dark";
-                cam->AcquireImage();
+                reciever->AcquireImage();
             }
             else
             {
@@ -940,9 +940,9 @@ void MainWindow::source_calibration()
     if(!status)
     {
         // установление соединений для автосканирования
-        connect(rap, SIGNAL(xrayFound()), cam, SLOT(AcquireImage()));
-        connect(cam, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
-        //connect(stepmotor_2,SIGNAL(continue_move()),cam,SLOT(AcquireImage()));
+        connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
+        connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
+        //connect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
         connect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
         selected_mode  = 2;
         status = 1;
@@ -951,7 +951,7 @@ void MainWindow::source_calibration()
 
         // установка времени экспозиции камеры
         AccumulationTime = ui->Exposure->text().toInt();
-        cam->SetAccumulationTime(AccumulationTime);
+        reciever->SetAccumulationTime(AccumulationTime);
         // включение источника РИ
         rap->on((uchar)ui->U_Auto->text().toShort(), (uchar)ui->I_Auto->text().toShort());
     }
@@ -969,9 +969,9 @@ void MainWindow::xray()
 void MainWindow::finish_calibration()
 {
     rap->off();
-    disconnect(rap, SIGNAL(xrayFound()), cam, SLOT(AcquireImage()));
-    disconnect(cam, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
-    //disconnect(stepmotor_2,SIGNAL(continue_move()),cam,SLOT(AcquireImage()));
+    disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
+    disconnect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
+    //disconnect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
     disconnect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
 
     // выключение источника, сброс индикации
@@ -1005,7 +1005,7 @@ void MainWindow::on_comboBox_2_currentIndexChanged(int index)
     case 0:
         qDebug() << "text0" << ui->comboBox_2->currentText();
         reciever = new AlphaCam;
-        //selected_cam = 1;
+        //selected_reciever = 1;
         break;
     case 1:
         qDebug() << "text1" << ui->comboBox_2->currentText();

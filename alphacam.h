@@ -58,11 +58,6 @@ public:
     AP_ReadImage myAPServer_ReadImage;
     AP_SetAccumulationTime myAPServer_SetAccumulationTime;
 
-signals:
-    virtual void GetDataComplete(ushort*);
-
-
-
 public slots:
     virtual void AcquireImage();
     virtual void SetAccumulationTime(int time);
@@ -71,7 +66,7 @@ public slots:
     virtual QString RenameOfImages();
 
 private slots:
-    void WaitForExecution();
+    virtual void WaitForExecution();
 
 };
 

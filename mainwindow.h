@@ -39,8 +39,6 @@ public:
 
     QSettings * settingtxt;
     stepmotor_rotate * stepmotor, * stepmotor_2;
-    //AlphaCam * cam;
-    //MLTCam * cam; // ???
     cam *reciever;
     RAPEltechMED * rap;
     QTimer * Timer;
