@@ -4,6 +4,8 @@ MLTCam::MLTCam()
 {
     data = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
 
+    ImageCount = 0;
+
     PvDeviceFinderWnd lFinderWnd;
     if (! lFinderWnd.ShowModal().IsOK() )
     {
@@ -380,38 +382,6 @@ void MLTCam::FreeStreamBuffers( BufferList *aBufferList )
     aBufferList->clear();
 }
 
-
-QString MLTCam::RenameOfImages()
-{
-    ImageCount ++;
-    QString FormatOfName;
-    FormatOfName = QString("%1").arg(ImageCount);
-    while (FormatOfName.length() <= Format_Name_Of_Image)
-    {
-        FormatOfName = '0' + FormatOfName;
-    }
-    FormatOfName = "/image_" + FormatOfName + ".raw";
-    if (ImageCount == number_of_steps) ImageCount = 0;
-    qDebug() << "ImageCount" << ImageCount;
-    return FormatOfName;
-}
-
-QString MLTCam::RenameOfImagesTiff()
-{
-    ImageCount ++;
-    QString FormatOfName = QString::number(ImageCount);
-    qDebug() << "image1" << FormatOfName;
-
-    while (FormatOfName.length() <= Format_Name_Of_Image)
-    {
-        FormatOfName = "0" + FormatOfName;
-    }
-    FormatOfName.push_front("image_");
-    FormatOfName.push_back(".tif");
-    if (ImageCount == number_of_steps) ImageCount = 0;
-    qDebug() << "image2" << FormatOfName;
-    return FormatOfName;
-}
 
 void MLTCam::Disconnect()
 {

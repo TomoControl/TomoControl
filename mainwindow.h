@@ -23,6 +23,7 @@
 #include "plcmwidget.h"
 #include "mltcam.h"
 #include "cam.h"
+#include "service_functions.h"
 
 
 namespace Ui {
@@ -50,6 +51,7 @@ public:
     uint SourcePort , DestinationPort;
     Dialog * dialog;
     plcmwidget * plcmwi;
+    service_functions *service;
     uchar selected_mode , calb_step , selected_cam , CountOfDarkImage;
     int compare , difference;
     int cent_1 , cent_2;

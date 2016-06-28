@@ -31,7 +31,7 @@ public:
     int number_of_steps, count_of_steps;
 
     ushort * data;
-    ushort ImageCount;
+
     ushort Counter;
 
     bool libStatus;
@@ -62,8 +62,6 @@ public slots:
     virtual void AcquireImage();
     virtual void SetAccumulationTime(int time);
     virtual void Disconnect();
-    virtual QString RenameOfImagesTiff();
-    virtual QString RenameOfImages();
 
 private slots:
     virtual void WaitForExecution();

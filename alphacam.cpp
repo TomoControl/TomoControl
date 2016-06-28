@@ -34,7 +34,6 @@ AlphaCam::AlphaCam()
     }
     number_of_steps = 0;
     count_of_steps = 0;
-    ImageCount = 0;
     Counter = 0;
 }
 
@@ -104,38 +103,6 @@ void AlphaCam::Disconnect()
 {
     qDebug() << "AlphaCam::Отключение соединения";
     myAPServer_Disconnect();
-}
-
-QString AlphaCam::RenameOfImages()
-{
-    ImageCount ++;
-    QString FormatOfName;
-    FormatOfName = QString("%1").arg(ImageCount);
-    while (FormatOfName.length() <= Format_Name_Of_Image)
-    {
-        FormatOfName = '0' + FormatOfName;
-    }
-    FormatOfName = "/image_" + FormatOfName + ".raw";
-    if (ImageCount == number_of_steps) ImageCount = 0;
-    qDebug() << "ImageCount" << ImageCount;
-    return FormatOfName;
-}
-
-QString AlphaCam::RenameOfImagesTiff()
-{
-    ImageCount ++;
-    QString FormatOfName = QString::number(ImageCount);
-    qDebug() << "image1" << FormatOfName;
-
-    while (FormatOfName.length() <= Format_Name_Of_Image)
-    {
-        FormatOfName = "0" + FormatOfName;
-    }
-    FormatOfName.push_front("image_");
-    FormatOfName.push_back(".tif");
-    if (ImageCount == number_of_steps) ImageCount = 0;
-    qDebug() << "image2" << FormatOfName;
-    return FormatOfName;
 }
 
 

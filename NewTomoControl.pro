@@ -26,7 +26,8 @@ SOURCES += main.cpp\
     plcmwidget.cpp \
     plcm.cpp \
     mltcam.cpp \
-    cam.cpp
+    cam.cpp \
+    service_functions.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -44,7 +45,8 @@ HEADERS  += mainwindow.h \
     plcmwidget.h \
     plcm.h \
     mltcam.h \
-    cam.h
+    cam.h \
+    service_functions.h
 
 
 FORMS    += mainwindow.ui \

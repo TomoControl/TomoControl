@@ -52,13 +52,10 @@ public:
     BufferList lBufferList;
 
     int number_of_steps;
-    ushort ImageCount;
 
 public slots:
     virtual void AcquireImage();
     virtual void SetAccumulationTime(int time);
-    virtual QString RenameOfImagesTiff();
-    virtual QString RenameOfImages();
     virtual void Disconnect();
 
 private slots:

@@ -16,8 +16,6 @@ public slots:
     virtual void AcquireImage()=0;
     virtual void SetAccumulationTime(int time)=0;
     virtual void Disconnect()=0;
-    virtual QString RenameOfImagesTiff()=0;
-    virtual QString RenameOfImages()=0;
 
 private slots:
     virtual void WaitForExecution()=0;

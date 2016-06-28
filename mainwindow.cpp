@@ -28,6 +28,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     dialog = new Dialog;
     plcmwi = new plcmwidget;
+    service = new service_functions;
 
     // создание поля для изображения
     frame = new myFrame;
@@ -124,9 +125,9 @@ void MainWindow::myTimer()    //действие по таймеру
     ui->pos2->setText(QString::number(show.Position_2));
     ui->pos3->setText(QString::number(show.Position_3));
 
-    ui->pos4->setText(QString::number(show_2.Position_1));
-    ui->pos5->setText(QString::number(show_2.Position_2));
-    ui->pos6->setText(QString::number(show_2.Position_3));
+    //ui->pos4->setText(QString::number(show_2.Position_1));
+    //ui->pos5->setText(QString::number(show_2.Position_2));
+    //ui->pos6->setText(QString::number(show_2.Position_3));
 
     // отображение текущего шага сканирования
     ui->current_step->setText(QString::number(CountOfShoot));
@@ -214,6 +215,7 @@ void MainWindow::on_Start_AutoScan_clicked()
         selected_mode = 1;
         // желаемое количество проекций
         NumberOfImage = ui->NumberOfSteps->text().toInt();
+
         // индикация процесса выполнения набора проекций
         ui->progressBar->setRange(0,NumberOfImage);
 
@@ -320,7 +322,10 @@ void MainWindow::onGetData(ushort * tdata)
                 QString Time_start = QTime::currentTime().toString("hh-mm-ss");
 
                 // выбор директории для сохранения
-                chooseDirectory(1);
+                if(ui->comboBox_2->currentIndex() != 1)
+                {
+                    chooseDirectory(1);
+                }
 
                 QSettings *setting = new QSettings ( FileDirectory , QSettings::IniFormat);
                 setting->setValue("NumberOfImage" , NumberOfImage);
@@ -393,14 +398,14 @@ void MainWindow::onGetData(ushort * tdata)
 
                 // сохранение изображений в raw-формате
                 QString NameForSaveImage;
-                NameForSaveImage = reciever->RenameOfImages();
+                NameForSaveImage = service->RenameOfImages(CountOfShoot);
                 QFile file(FileDirectory + NameForSaveImage);
                 if (!file.open(QIODevice::WriteOnly))
                 {
                     qDebug() << "Cканирование:: Сохранение изображения:: Ошибка открытия файла";
                 }
                 file.write((char*)dData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
-                //frame->setRAWImage(dData);
+                frame->setRAWImage(dData);
                 CountOfShoot++;
             }
 
@@ -549,7 +554,8 @@ void MainWindow::onGetData(ushort * tdata)
 //                }
 
                 QString NameForSaveImage;
-                NameForSaveImage = QString("DarkImage%1.RAW").arg(CountOfDarkImage);
+                NameForSaveImage = QString("DarkImage%1.raw").arg(CountOfDarkImage);
+                chooseDirectory(1);
                 QFile file(FileDirectory + NameForSaveImage);
                 if (!file.open(QIODevice::WriteOnly))
                 {
