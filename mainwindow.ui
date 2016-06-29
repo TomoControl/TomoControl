@@ -557,6 +557,9 @@
             </property>
            </widget>
           </item>
+          <item row="0" column="5">
+           <widget class="QComboBox" name="comboBox"/>
+          </item>
           <item row="0" column="3">
            <widget class="QPushButton" name="convert_image">
             <property name="text">
@@ -582,7 +585,11 @@
            </widget>
           </item>
           <item row="0" column="4">
-           <widget class="QComboBox" name="comboBox"/>
+           <widget class="QCheckBox" name="brCalibration">
+            <property name="text">
+             <string>Calibration of brightness</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>
