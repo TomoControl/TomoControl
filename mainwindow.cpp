@@ -663,6 +663,7 @@ void MainWindow::convertToTiff()
         brCalMean = brCalData[0];
         for (int i = 0; i< IMAGE_WIDTH*IMAGE_HEIGHT; i++)
             brCalMean = (brCalMean + brCalData[i])/2;
+        qDebug() << brCalMean;
     }
 
     for (uint i = 1; i <= CountOfImage; i++)
@@ -729,8 +730,9 @@ void MainWindow::convertToTiff()
             {
                 for (int j=0; j<IMAGE_WIDTH-1; j++)
                 {
-                    if (ui->Calibrate->isChecked())
-                        calFactor = brCalMean/brCalData[(k*IMAGE_WIDTH)+j];
+                    if (ui->brCalibration->isChecked())
+                        calFactor = (float)brCalMean/(float)brCalData[(k*IMAGE_WIDTH)+j];
+
                     pixel = dData[(k*IMAGE_WIDTH)+j]*calFactor;
                     pixel = 65535  * (pixel - min) / (max - min) ;
                     if (pixel>65535) pixel = 65535;
@@ -738,6 +740,7 @@ void MainWindow::convertToTiff()
                     if (ui->comboBox_2->currentIndex() == 1) dData[(k*IMAGE_WIDTH)+j] = pixel;
                     else dData[(k*IMAGE_WIDTH)+j] = 65535 - pixel;
                 }
+
             }
         }
         else
@@ -748,8 +751,8 @@ void MainWindow::convertToTiff()
             {
                 for (int j=0; j<IMAGE_WIDTH-1; j++)
                 {
-                    if (ui->Calibrate->isChecked())
-                        calFactor = brCalMean/brCalData[(k*IMAGE_WIDTH)+j];
+                    if (ui->brCalibration->isChecked())
+                        calFactor = (float)brCalMean/(float)brCalData[(k*IMAGE_WIDTH)+j];
                     pixel = dData[(k*IMAGE_WIDTH)+j]*calFactor;
                     pixel = 65535 * (pixel - min) / (max - min);
                     if (pixel>65535) pixel = 65535;

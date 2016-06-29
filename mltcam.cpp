@@ -4,8 +4,6 @@ MLTCam::MLTCam()
 {
     data = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
 
-    ImageCount = 0;
-
     PvDeviceFinderWnd lFinderWnd;
     if (! lFinderWnd.ShowModal().IsOK() )
     {
