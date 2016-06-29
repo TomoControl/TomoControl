@@ -732,10 +732,10 @@
           <bool>false</bool>
          </property>
          <property name="currentText">
-          <string notr="true">Cam choose</string>
+          <string notr="true">AlphaCam</string>
          </property>
          <property name="currentIndex">
-          <number>2</number>
+          <number>0</number>
          </property>
          <property name="duplicatesEnabled">
           <bool>false</bool>
@@ -752,7 +752,7 @@
          </item>
          <item>
           <property name="text">
-           <string>Cam choose</string>
+           <string>Сhoose reciever</string>
           </property>
          </item>
         </widget>

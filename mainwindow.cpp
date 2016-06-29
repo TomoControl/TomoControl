@@ -58,12 +58,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(Timer , SIGNAL(timeout()) , this, SLOT(myTimer()));
     Timer->start(200);
 
-    // инициализация приемника РИ
-    //cam = new MLTCam;
+    ui->Start_AutoScan->setDisabled(true);
 
-    //cam = new AlphaCam;
-
-    //ui->Start_AutoScan->setDisabled(true);
     // инициализация источника РИ
     rap = new RAPEltechMED;
     rap->initialization();
@@ -618,7 +614,7 @@ void MainWindow::on_load_image_clicked()
     CountOfImage = setting_stop->value("NumberOfImage" , 0).toInt();
     chooseDirectory(2);
     for(uint i = 1; i <= CountOfImage; i++)
-    { // подгрузка в комбобок при автосканировании
+    { // подгрузка в комбобокc при автосканировании
         QString CheckedImage;
         if (i < 9) CheckedImage = QString("image_000%1.raw").arg(i);
         if (i >=9 && i < 99) CheckedImage = QString("image_00%1.raw").arg(i);
@@ -716,7 +712,8 @@ void MainWindow::convertToTiff()
                     pixel = 65535  * (pixel - min) / (max - min) ;
                     if (pixel>65535) pixel = 65535;
                     if (pixel<0) pixel = 0;
-                    dData[(k*IMAGE_WIDTH)+j] = 65535 - pixel;
+                    if (ui->comboBox_2->currentIndex() == 1) dData[(k*IMAGE_WIDTH)+j] = pixel;
+                    else dData[(k*IMAGE_WIDTH)+j] = 65535 - pixel;
                 }
             }
         }
@@ -732,7 +729,9 @@ void MainWindow::convertToTiff()
                     pixel = 65535 * (pixel - min) / (max - min);
                     if (pixel>65535) pixel = 65535;
                     if (pixel<0) pixel = 0;
-                    dData[(k*IMAGE_WIDTH)+j] = 65535 - pixel;
+                    if (ui->comboBox_2->currentIndex() == 1) dData[(k*IMAGE_WIDTH)+j] = pixel;
+                    if (ui->comboBox_2->currentIndex() == 1) dData[(k*IMAGE_WIDTH)+j] = pixel;
+                    else dData[(k*IMAGE_WIDTH)+j] = 65535 - pixel;
                 }
             }
         }

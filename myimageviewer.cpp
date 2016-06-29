@@ -169,9 +169,11 @@ void myFrame::setRAWImage(ushort * RAWData)
 {
     //imageData = new ushort[IMAGE_HEIGHT*IMAGE_WIDTH];
     //memcpy(imageData, RAWData, IMAGE_HEIGHT*IMAGE_WIDTH*2);
+
+    qDebug() << "set raw image 1" << QTime::currentTime().toString("hh:mm:ss.zzz");
     quint8 * line = rxImage.scanLine(0);
     int stride =  rxImage.bytesPerLine();
-
+    qDebug() << "set raw image 2" << QTime::currentTime().toString("hh:mm:ss.zzz");
     qint32 pixel = 0;
     for ( int y = 0; y < rxImage.height(); ++y, line += stride)
     {
@@ -190,7 +192,7 @@ void myFrame::setRAWImage(ushort * RAWData)
             pix[0] =  pixel;
         }
     }
-
+    qDebug() << "set raw image 3" << QTime::currentTime().toString("hh:mm:ss.zzz");
     QPixmap pixmap;
     pixmap.convertFromImage(rxImage);
 
@@ -202,7 +204,7 @@ void myFrame::setRAWImage(ushort * RAWData)
 
 
     // Расчитываем гистограмму изображения
-
+    qDebug() << "hist calculation 1" << QTime::currentTime().toString("hh:mm:ss.zzz");
     for (int i=0; i < (BITS + 1); i++) a[i] = 0;
 
     for ( int y = 0; y < rxImage.height(); y++)
@@ -212,15 +214,18 @@ void myFrame::setRAWImage(ushort * RAWData)
             a[RAWData[(y*IMAGE_WIDTH)+x]]++;
         }
     }
+    qDebug() << "hist calculation 2" << QTime::currentTime().toString("hh:mm:ss.zzz");
     emit histCalculated(a);
     emit finished();
 }
 
 void myFrame::onChangeHistogrammWidget(int x1, int x2)
 {
+    qDebug() << "ChangeHistogrammWidget 1" << QTime::currentTime().toString("hh:mm:ss.zzz");
     quint8 * line = rxImage.scanLine(0);
     int stride =  rxImage.bytesPerLine();
     qint32 pixel = 0;
+    qDebug() << "ChangeHistogrammWidget 2" << QTime::currentTime().toString("hh:mm:ss.zzz");
     for ( int y = 0; y < rxImage.height(); ++y, line += stride)
     {
         quint8 * pix = line;
@@ -238,15 +243,18 @@ void myFrame::onChangeHistogrammWidget(int x1, int x2)
             pix[0] =  pixel;
         }
     }
+    qDebug() << "ChangeHistogrammWidget 3" << QTime::currentTime().toString("hh:mm:ss.zzz");
 
     QPixmap pixmap;
     pixmap.convertFromImage(rxImage);
     imageLabel->setPixmap(pixmap);
+    qDebug() << "ChangeHistogrammWidget 4" << QTime::currentTime().toString("hh:mm:ss.zzz");
 }
 
 
 QImage myFrame::applyAutoContrast(int x1, int x2)
 {
+    qDebug() << "applyAutoContrast 1" << QTime::currentTime().toString("hh:mm:ss.zzz");
     quint8 * line = rxImage.scanLine(0);
     int stride =  rxImage.bytesPerLine();
     qint32 pixel = 0;
@@ -267,6 +275,7 @@ QImage myFrame::applyAutoContrast(int x1, int x2)
             pix[0] =  pixel;
         }
     }
+    qDebug() << "applyAutoContrast 1" << QTime::currentTime().toString("hh:mm:ss.zzz");
 
     return rxImage;
 }
