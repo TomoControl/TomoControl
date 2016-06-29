@@ -636,13 +636,35 @@ void MainWindow::convertToTiff()
     QString CurrentPicture;
     ushort CountOfImage;
     ushort * dData;
+    ushort * brCalData;
     dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
+    brCalData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
     QSettings *setting_2 = new QSettings (  FileDirectory , QSettings::IniFormat ); // &\? directory of .ini
     CountOfImage = setting_2->value("NumberOfImage" , 0).toInt();
     qDebug() << "Конвертирование:: Число изображений для конвертации:" << CountOfImage;
     chooseDirectory(2);
     int min = 62341;
     int max = 0;
+    short brCalMean = 0;
+    float calFactor = 1.0;
+
+    // Загружаем калибровочный файл, только если установлен флаг
+    if (ui->brCalibration->isChecked())
+    {
+        CurrentPicture = QString("brCal.raw");
+        QFile brCalFile(FileDirectory + CurrentPicture);
+        if (!brCalFile.open(QIODevice::ReadOnly))
+        {
+            qDebug() << "Конвертирование::Ошибка открытия файла";
+        }
+        brCalFile.read((char*)brCalData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
+
+        // Вычисляем среднее значение по файлу
+        brCalMean = brCalData[0];
+        for (int i = 0; i< IMAGE_WIDTH*IMAGE_HEIGHT; i++)
+            brCalMean = (brCalMean + brCalData[i])/2;
+    }
+
     for (uint i = 1; i <= CountOfImage; i++)
     {
         if (i < 10) CurrentPicture = QString("image_000%1.raw").arg(i);
@@ -659,7 +681,6 @@ void MainWindow::convertToTiff()
         if (i < 11) NameForSave = QString("/s_000%1.tif").arg(i-1);
         if (i >=11 && i < 101) NameForSave = QString("/s_00%1.tif").arg(i-1);
         if (i >=101) NameForSave = QString("/s_0%1.tif").arg(i-1);
-
 
         if (i == 1)
         {
@@ -708,7 +729,9 @@ void MainWindow::convertToTiff()
             {
                 for (int j=0; j<IMAGE_WIDTH-1; j++)
                 {
-                    pixel = dData[(k*IMAGE_WIDTH)+j];
+                    if (ui->Calibrate->isChecked())
+                        calFactor = brCalMean/brCalData[(k*IMAGE_WIDTH)+j];
+                    pixel = dData[(k*IMAGE_WIDTH)+j]*calFactor;
                     pixel = 65535  * (pixel - min) / (max - min) ;
                     if (pixel>65535) pixel = 65535;
                     if (pixel<0) pixel = 0;
@@ -725,11 +748,12 @@ void MainWindow::convertToTiff()
             {
                 for (int j=0; j<IMAGE_WIDTH-1; j++)
                 {
-                    pixel = dData[(k*IMAGE_WIDTH)+j];
+                    if (ui->Calibrate->isChecked())
+                        calFactor = brCalMean/brCalData[(k*IMAGE_WIDTH)+j];
+                    pixel = dData[(k*IMAGE_WIDTH)+j]*calFactor;
                     pixel = 65535 * (pixel - min) / (max - min);
                     if (pixel>65535) pixel = 65535;
                     if (pixel<0) pixel = 0;
-                    if (ui->comboBox_2->currentIndex() == 1) dData[(k*IMAGE_WIDTH)+j] = pixel;
                     if (ui->comboBox_2->currentIndex() == 1) dData[(k*IMAGE_WIDTH)+j] = pixel;
                     else dData[(k*IMAGE_WIDTH)+j] = 65535 - pixel;
                 }
