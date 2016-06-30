@@ -59,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent) :
     Timer->start(200);
 
     ui->Start_AutoScan->setDisabled(true);
+    ui->handle->setDisabled(true);
 
     // инициализация источника РИ
     rap = new RAPEltechMED;
@@ -87,7 +88,7 @@ MainWindow::~MainWindow()
 
 
     // отключение и осовобождение памяти для приемника РИ
-
+    if(ui->comboBox_2->currentIndex() <= 1)               // TODO: Изменить, если появятся еще приемники
     delete reciever;
 
     // отключение и осовобождение памяти для источника РИ
@@ -248,6 +249,8 @@ void MainWindow::on_Start_AutoScan_clicked()
         reciever->SetAccumulationTime(AccumulationTime);
         // включение источника РИ
 
+
+
         if (ui->comboBox_2->currentIndex() == 1)
         {
             MakeDarkImage();
@@ -330,6 +333,7 @@ void MainWindow::onGetData(ushort * tdata)
                 setting->setValue("StartTime" , Time_start);
                 setting->sync();
                 chooseDirectory(2);
+                MakeConfig(); // конфигурационный файл для восстановления проекций
                 settingtxt = new QSettings ( FileDirectory + "txt.ini" , QSettings::IniFormat);
             }
 
@@ -1050,4 +1054,66 @@ void MainWindow::on_comboBox_2_currentIndexChanged(int index)
     }
     ui->comboBox_2->setDisabled(true);
     ui->Start_AutoScan->setDisabled(false);
+    ui->handle->setDisabled(false);
+}
+
+void MainWindow::MakeConfig()
+{
+    int ObjectToSource = 50;
+    int CameraToSource = 500;
+
+    int PixelSize;
+    if (ui->comboBox_2->currentIndex() == 0)
+        PixelSize = 189;
+    if (ui->comboBox_2->currentIndex() == 1)
+        PixelSize = 50;
+
+    float ScaledPixelSize = (float)ObjectToSource*(float)PixelSize/(float)CameraToSource;
+    qDebug() << ScaledPixelSize;
+
+    QSettings *setting = new QSettings ( FileDirectory + "s_.log" , QSettings::IniFormat);
+    setting->setValue("System/Scanner" , "MEVLINDET-1");
+    setting->setValue("System/Instrument S/N" , "10H03060");
+    setting->setValue("System/Software" , "Version 1. 1 (build 3)");
+    setting->setValue("System/Home Directory" , "C:\\");
+    setting->setValue("System/Source Type" , "RTW 60/100");
+    setting->setValue("System/Camera" , "SHT MR285MC");
+    setting->setValue("System/Camera Pixel Size (um)" , PixelSize);
+    setting->setValue("System/CameraXYRatio" , 1.0);
+
+    //setting->setValue("Acquisition/Data Directory" , "D:\004 - Projection data\implant-200\s_");
+    setting->setValue("Acquisition/Filename Prefix" , "s_");
+    setting->setValue("Acquisition/Number Of Files" , ui->NumberOfSteps->text().toInt());
+    setting->setValue("Acquisition/Number Of Rows" , IMAGE_HEIGHT);
+    setting->setValue("Acquisition/Number Of Columns" , IMAGE_WIDTH);
+    setting->setValue("Acquisition/Optical Axis (line)" , 1000);
+    setting->setValue("Acquisition/Object to Source (mm)" , ObjectToSource);
+    setting->setValue("Acquisition/Camera to Source" , CameraToSource);
+
+    setting->setValue("Acquisition/Source Voltage (kV)" , ui->U_Auto->text().toInt());
+    setting->setValue("Acquisition/Source Current (uA)" , ui->I_Auto->text().toInt());
+    setting->setValue("Acquisition/Image Pixel Size (um)" , PixelSize);
+    setting->setValue("Acquisition/Scaled Image Pixel Size (um)" , ScaledPixelSize);
+    setting->setValue("Acquisition/Image Format" , "TIFF");
+    setting->setValue("Acquisition/Depth (bits)" , 16);
+    setting->setValue("Acquisition/Screen LUT" , "ScreenLUT");
+    setting->setValue("Acquisition/Exposure(ms)" , ui->Exposure->text().toInt());
+    setting->setValue("Acquisition/Rotation Step (deg)" , 360.0/(float)ui->NumberOfSteps->text().toInt());
+    setting->setValue("Acquisition/Use 360 Rotation" , "YES");
+    //setting->setValue("Acquisition/Scanning position" , "ScanningPosition");
+    setting->setValue("Acquisition/Flat Field Correction" ,"OFF" );
+    setting->setValue("Acquisition/Sharpening (%)" , "Sharpening");
+    //setting->setValue("Acquisition/Random Movement" , "OFF");
+    setting->setValue("Acquisition/Geometrical Correction" , "ON" );
+    //setting->setValue("Acquisition/Filter" , "Cu 2mm");
+    setting->setValue("Acquisition/Rotation Direction" , "CC");
+    setting->setValue("Acquisition/Type of Detector Motion" , "STEP AND SHOOT");
+    //setting->setValue("Acquisition/Scanning Trajectory" , "ROUND");
+    //setting->setValue("Acquisition/Number of connected scans" , 1);
+    //setting->setValue("Acquisition/Study Date and Time" , "Dec 14, 2010  16:58:03");
+    //setting->setValue("Acquisition/Scan duration" , "00:06:13");
+
+    setting->sync();
+
+    service->deletespace(FileDirectory + "s_.log");
 }

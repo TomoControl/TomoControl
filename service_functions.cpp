@@ -19,6 +19,24 @@ QString service_functions::RenameOfImages(ushort Count)
     return FormatOfName;
 }
 
+void service_functions::deletespace(QString adress)
+{
+    QFile file(adress);
+    if (!file.open(QIODevice::ReadWrite))
+    {
+        qDebug() << "ошибка";
+    }
+    QByteArray tmp = file.readAll();
+    qDebug() << "service" << tmp;
+    file.reset();
+    tmp.replace("%20"," ");
+    tmp.replace("%28","(");
+    tmp.replace("%29",")");
+    tmp.replace("%25","%");
+
+    file.write(tmp);
+
+}
 
 
 
