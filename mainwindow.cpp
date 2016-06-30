@@ -76,6 +76,15 @@ MainWindow::~MainWindow()
     disconnect(frame, SIGNAL(histCalculated(ushort*)), graphicsScene, SLOT(onHistCalculated(ushort*)));
     disconnect(graphicsScene, SIGNAL(changeHistOutput(int,int)), frame, SLOT(onChangeHistogrammWidget(int,int)));
 
+    QSettings *setting = new QSettings ( QDir::currentPath() + "LastValue.ini" , QSettings::IniFormat);
+    setting->setValue("NumberOfImage" , ui->NumberOfSteps->text().toInt());
+    setting->setValue("Current" , (uchar)ui->I_Auto->text().toShort());
+    setting->setValue("Voltage" , (uchar)ui->U_Auto->text().toShort());
+    setting->setValue("Exposure" , ui->Exposure->text().toInt());
+    setting->setValue("IntensiveCorrection" , ui->Compare->text().toInt());
+    setting->setValue("TimeCorrect" , ui->TimeCorrect->text().toInt());
+    setting->sync();
+
     // отключение и осовобождение памяти для драйверов ШД
     Timer->stop();
     QObject::disconnect(Timer , SIGNAL(timeout()) , this , SLOT(myTimer()));
