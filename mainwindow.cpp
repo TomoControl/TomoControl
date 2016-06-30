@@ -251,7 +251,7 @@ void MainWindow::on_Start_AutoScan_clicked()
 
 
 
-        if (ui->comboBox_2->currentIndex() == 1)
+        if ((ui->comboBox_2->currentIndex() == 1)&&(NUMBER_OF_DARK_IMAGE > 0))
         {
             MakeDarkImage();
         }
@@ -535,34 +535,19 @@ void MainWindow::onGetData(ushort * tdata)
             rap->off();
             break;
         case 4:
+        {
+            CountOfDarkImage ++;
+            QString NameForSaveImage;
+            NameForSaveImage = QString("DarkImage%1.raw").arg(CountOfDarkImage);
+            chooseDirectory(1);
+            QFile file(FileDirectory + NameForSaveImage);
+            if (!file.open(QIODevice::WriteOnly))
+            {
+                qDebug() << "Сканирование:: Сохранение темнового изображения:: Ошибка открытия файла";
+            }
+            file.write((char*)dData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
             if (CountOfDarkImage < NUMBER_OF_DARK_IMAGE)
             {
-
-                CountOfDarkImage ++;
-                qDebug() << "count" << CountOfDarkImage;
-//                for (int k = 0; k < IMAGE_HEIGHT - 1; k++)
-//                {
-//                    for (int j = 0; j < IMAGE_WIDTH - 1; j++)
-//                    {
-//                        if(CountOfDarkImage == 1) darkData[(k * IMAGE_WIDTH)+ j] = dData[(k * IMAGE_WIDTH) + j];
-//                        else
-//                        {
-//                            darkData[(k * IMAGE_WIDTH)+ j] += dData[(k * IMAGE_WIDTH) + j];
-//                            darkData[(k * IMAGE_WIDTH)+ j] /= 2;
-//                        }
-//                    }
-//                }
-
-                QString NameForSaveImage;
-                NameForSaveImage = QString("DarkImage%1.raw").arg(CountOfDarkImage);
-                chooseDirectory(1);
-                QFile file(FileDirectory + NameForSaveImage);
-                if (!file.open(QIODevice::WriteOnly))
-                {
-                    qDebug() << "Сканирование:: Сохранение темнового изображения:: Ошибка открытия файла";
-                }
-                file.write((char*)dData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
-
                 qDebug() << "next dark";
                 reciever->AcquireImage();
             }
@@ -576,7 +561,7 @@ void MainWindow::onGetData(ushort * tdata)
                 delete darkData;
             }
             break;
-
+        }
         default:
             break;  
         }
