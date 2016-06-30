@@ -21,7 +21,7 @@
 
 #define MAX_FREQUENCY 5000
 
-#define NUMBER_OF_DARK_IMAGE 10
+#define NUMBER_OF_DARK_IMAGE 3
 
 #define THRESHOLD 200 // порог определения тест-объекта при калибровке источника
 

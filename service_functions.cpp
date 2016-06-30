@@ -29,7 +29,13 @@ void service_functions::deletespace(QString adress)
     QByteArray tmp = file.readAll();
     qDebug() << "service" << tmp;
     file.reset();
-    file.write(tmp.replace("%20"," "));
+    tmp.replace("%20"," ");
+    tmp.replace("%28","(");
+    tmp.replace("%29",")");
+    tmp.replace("%25","%");
+
+    file.write(tmp);
+
 }
 
 
