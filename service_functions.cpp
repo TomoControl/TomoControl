@@ -22,20 +22,27 @@ QString service_functions::RenameOfImages(ushort Count)
 void service_functions::deletespace(QString adress)
 {
     QFile file(adress);
-    if (!file.open(QIODevice::ReadWrite))
+    if (!file.open(QIODevice::ReadOnly))
     {
-        qDebug() << "ошибка";
+        qDebug() << "Service::Error";
     }
     QByteArray tmp = file.readAll();
-    qDebug() << "service" << tmp;
-    file.reset();
+    file.close();
+
+    QFile file_tmp(adress);
+    if (file_tmp.open(QIODevice::WriteOnly | QIODevice::Truncate))
+    file_tmp.close();
+
+    QFile file_out("s_.log");
+    if (!file_out.open(QIODevice::WriteOnly))
+    {
+        qDebug() << "Service::Error";
+    }
     tmp.replace("%20"," ");
     tmp.replace("%28","(");
     tmp.replace("%29",")");
     tmp.replace("%25","%");
-
-    file.write(tmp);
-
+    file_out.write(tmp);
 }
 
 

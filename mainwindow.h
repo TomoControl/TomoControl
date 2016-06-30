@@ -115,7 +115,6 @@ private slots:
     void on_comboBox_2_currentIndexChanged(int index);
     void convertTo8Bit();
     void convertToTiff();
-    void chooseDirectory(uchar stage);
     void make_shoot(uchar , uchar , int);
     void close_dialog();
     void StartAutoScan();

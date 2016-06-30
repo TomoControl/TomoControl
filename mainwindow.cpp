@@ -209,6 +209,9 @@ void MainWindow::on_Start_AutoScan_clicked()
 {
     if(!status)
     {
+        FileDirectory = QString("AutoScan/%1/%2").arg(QDate::currentDate().toString("yyyy-MM-dd"))
+                                                 .arg(QTime::currentTime().toString("hh-mm-ss"));
+
         selected_mode = 1;
         // желаемое количество проекций
         NumberOfImage = ui->NumberOfSteps->text().toInt();
@@ -247,9 +250,6 @@ void MainWindow::on_Start_AutoScan_clicked()
         // установка времени экспозиции камеры
         AccumulationTime = ui->Exposure->text().toInt();
         reciever->SetAccumulationTime(AccumulationTime);
-        // включение источника РИ
-
-
 
         if ((ui->comboBox_2->currentIndex() == 1)&&(NUMBER_OF_DARK_IMAGE > 0))
         {
@@ -304,10 +304,8 @@ void MainWindow::onGetData(ushort * tdata)
 {
         qDebug() << "OnGetData";
         ushort * dData;
-        dData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
-        memcpy(dData, tdata, IMAGE_WIDTH*IMAGE_HEIGHT*2);
-        //frame->setRAWImage(dData);
-
+        dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
+        memcpy(dData, tdata, IMAGE_WIDTH * IMAGE_HEIGHT * 2);
 
         switch (selected_mode)
         {
@@ -319,20 +317,12 @@ void MainWindow::onGetData(ushort * tdata)
 
                 // создание ini-файла с параметрами съемки
                 QString Time_start = QTime::currentTime().toString("hh-mm-ss");
-
-                // выбор директории для сохранения
-                if(ui->comboBox_2->currentIndex() != 1)
-                {
-                    chooseDirectory(1);
-                }
-
-                QSettings *setting = new QSettings ( FileDirectory , QSettings::IniFormat);
+                QSettings *setting = new QSettings ( FileDirectory + "ShootingMode.ini" , QSettings::IniFormat);
                 setting->setValue("NumberOfImage" , NumberOfImage);
                 setting->setValue("Current" , (uchar)ui->I_Auto->text().toShort());
                 setting->setValue("Voltage" , (uchar)ui->U_Auto->text().toShort());
                 setting->setValue("StartTime" , Time_start);
                 setting->sync();
-                chooseDirectory(2);
                 MakeConfig(); // конфигурационный файл для восстановления проекций
                 settingtxt = new QSettings ( FileDirectory + "txt.ini" , QSettings::IniFormat);
             }
@@ -844,45 +834,6 @@ void MainWindow::convertTo8Bit()
     delete[] dData;
 }
 
-// выбор директории для сохранения/загрузки полученных изображений
-void MainWindow::chooseDirectory(uchar stage)
-{
-    switch (stage)
-    {
-    case 1: // путь к ini-файлу в автоматическом и ручном режимах
-    {
-        QString date = QDate::currentDate().toString("yyyy-MM-dd");
-        QString time = QTime::currentTime().toString("hh-mm-ss");
-        QString auto_single = "AutoScan";
-        FileDirectory = QString("%1/%2/%3/ShootingMode.ini" ).arg(auto_single).arg(date).arg(time);
-        break;
-    }
-    case 2:  // путь для сохранения изображений в автоматическом и ручном режимах
-    {
-        FileDirectory = FileDirectory.remove("ShootingMode.ini");
-        FileDirectory = FileDirectory.remove("AutoContrast.ini");
-        break;
-    }
-    case 3:   // путь к ini-файлу в автоматическом и ручном режимах для дозаписи в него данных о съемке
-    {
-        FileDirectory += "ShootingMode.ini";
-        break;
-    }
-    case 4:  // путь для загрузки полученных ранее изображений
-    {
-        FileDirectory = QFileDialog::getOpenFileName(0,"Выбор файла", "", "ShootingMode.ini");
-        break;
-    }
-    case 5:  // путь для загрузки полученных ранее изображений
-    {
-        FileDirectory = QFileDialog::getOpenFileName(0,"Выбор файла", "", "AutoContrast.ini");
-        break;
-    }
-    default:
-        break;
-    }
-}
-
 void MainWindow::on_SaveAutoContrast_clicked()
 {
 //    chooseDirectory(4);
@@ -921,8 +872,8 @@ void MainWindow::on_NumberOfSteps_textChanged(const QString &arg1)
     (QString)waste = arg1;
     if ((ui->NumberOfSteps->text().toInt() == 1 && ui->with_rotate->isChecked()) ||
         (ui->NumberOfSteps->text().toInt() != 1 && !ui->with_rotate->isChecked()) ||
-         ui->NumberOfSteps->text().toInt() < 1 )
-        ui->Start_AutoScan->setEnabled(false);
+         ui->NumberOfSteps->text().toInt() < 1 || ui->comboBox_2->currentIndex() > 1)
+        ui->Start_AutoScan->setDisabled(true);
     else
         ui->Start_AutoScan->setDisabled(false);
 }
@@ -933,8 +884,8 @@ void MainWindow::on_with_rotate_stateChanged(int arg1)
     waste = arg1;
     if ((ui->NumberOfSteps->text().toInt() == 1 && ui->with_rotate->isChecked()) ||
         (ui->NumberOfSteps->text().toInt() != 1 && !ui->with_rotate->isChecked()) ||
-         ui->NumberOfSteps->text().toInt() < 1 )
-        ui->Start_AutoScan->setEnabled(false);
+         ui->NumberOfSteps->text().toInt() < 1 || ui->comboBox_2->currentIndex() > 1)
+        ui->Start_AutoScan->setDisabled(true);
     else
         ui->Start_AutoScan->setDisabled(false);
 }
@@ -1063,27 +1014,27 @@ void MainWindow::MakeConfig()
     setting->setValue("System/Home Directory" , "C:\\");
     setting->setValue("System/Source Type" , "RTW 60/100");
     setting->setValue("System/Camera" , "SHT MR285MC");
-    setting->setValue("System/Camera Pixel Size (um)" , PixelSize);
-    setting->setValue("System/CameraXYRatio" , 1.0);
+    setting->setValue("System/Camera Pixel Size (um)" , QString::number(PixelSize));
+    setting->setValue("System/CameraXYRatio" , QString::number(1.0));
 
     //setting->setValue("Acquisition/Data Directory" , "D:\004 - Projection data\implant-200\s_");
     setting->setValue("Acquisition/Filename Prefix" , "s_");
-    setting->setValue("Acquisition/Number Of Files" , ui->NumberOfSteps->text().toInt());
-    setting->setValue("Acquisition/Number Of Rows" , IMAGE_HEIGHT);
-    setting->setValue("Acquisition/Number Of Columns" , IMAGE_WIDTH);
-    setting->setValue("Acquisition/Optical Axis (line)" , 1000);
-    setting->setValue("Acquisition/Object to Source (mm)" , ObjectToSource);
-    setting->setValue("Acquisition/Camera to Source" , CameraToSource);
+    setting->setValue("Acquisition/Number Of Files" , QString::number(ui->NumberOfSteps->text().toInt()));
+    setting->setValue("Acquisition/Number Of Rows" , QString::number(IMAGE_HEIGHT));
+    setting->setValue("Acquisition/Number Of Columns" , QString::number(IMAGE_WIDTH));
+    setting->setValue("Acquisition/Optical Axis (line)" , QString::number(1000));
+    setting->setValue("Acquisition/Object to Source (mm)" , QString::number(ObjectToSource));
+    setting->setValue("Acquisition/Camera to Source" , QString::number(CameraToSource));
 
-    setting->setValue("Acquisition/Source Voltage (kV)" , ui->U_Auto->text().toInt());
-    setting->setValue("Acquisition/Source Current (uA)" , ui->I_Auto->text().toInt());
-    setting->setValue("Acquisition/Image Pixel Size (um)" , PixelSize);
-    setting->setValue("Acquisition/Scaled Image Pixel Size (um)" , ScaledPixelSize);
+    setting->setValue("Acquisition/Source Voltage (kV)" , QString::number(ui->U_Auto->text().toInt()));
+    setting->setValue("Acquisition/Source Current (uA)" , QString::number(ui->I_Auto->text().toInt()));
+    setting->setValue("Acquisition/Image Pixel Size (um)" , QString::number(PixelSize));
+    setting->setValue("Acquisition/Scaled Image Pixel Size (um)" , QString::number(ScaledPixelSize));
     setting->setValue("Acquisition/Image Format" , "TIFF");
-    setting->setValue("Acquisition/Depth (bits)" , 16);
+    setting->setValue("Acquisition/Depth (bits)" , QString::number(16));
     setting->setValue("Acquisition/Screen LUT" , "ScreenLUT");
-    setting->setValue("Acquisition/Exposure(ms)" , ui->Exposure->text().toInt());
-    setting->setValue("Acquisition/Rotation Step (deg)" , 360.0/(float)ui->NumberOfSteps->text().toInt());
+    setting->setValue("Acquisition/Exposure(ms)" , QString::number(ui->Exposure->text().toInt()));
+    setting->setValue("Acquisition/Rotation Step (deg)" , QString::number(360.0/(float)ui->NumberOfSteps->text().toInt()));
     setting->setValue("Acquisition/Use 360 Rotation" , "YES");
     //setting->setValue("Acquisition/Scanning position" , "ScanningPosition");
     setting->setValue("Acquisition/Flat Field Correction" ,"OFF" );
