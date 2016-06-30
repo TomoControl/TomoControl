@@ -995,8 +995,8 @@ void MainWindow::on_comboBox_2_currentIndexChanged(int index)
 
 void MainWindow::MakeConfig()
 {
-    int ObjectToSource = 50;
-    int CameraToSource = 500;
+    int ObjectToSource = 119;
+    int CameraToSource = 498;
 
     int PixelSize;
     if (ui->comboBox_2->currentIndex() == 0)
@@ -1029,7 +1029,7 @@ void MainWindow::MakeConfig()
     setting->setValue("Acquisition/Source Voltage (kV)" , QString::number(ui->U_Auto->text().toInt()));
     setting->setValue("Acquisition/Source Current (uA)" , QString::number(ui->I_Auto->text().toInt()));
     setting->setValue("Acquisition/Image Pixel Size (um)" , QString::number(PixelSize));
-    setting->setValue("Acquisition/Scaled Image Pixel Size (um)" , QString::number(ScaledPixelSize));
+    setting->setValue("Acquisition/Scaled Image Pixel Size (um)" , QString::number(int(ScaledPixelSize*100)/100));
     setting->setValue("Acquisition/Image Format" , "TIFF");
     setting->setValue("Acquisition/Depth (bits)" , QString::number(16));
     setting->setValue("Acquisition/Screen LUT" , "ScreenLUT");

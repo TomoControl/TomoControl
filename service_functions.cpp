@@ -33,7 +33,7 @@ void service_functions::deletespace(QString adress)
     if (file_tmp.open(QIODevice::WriteOnly | QIODevice::Truncate))
     file_tmp.close();
 
-    QFile file_out("s_.log");
+    QFile file_out(adress);
     if (!file_out.open(QIODevice::WriteOnly))
     {
         qDebug() << "Service::Error";
