@@ -59,6 +59,7 @@ MainWindow::MainWindow(QWidget *parent) :
     Timer->start(200);
 
     ui->Start_AutoScan->setDisabled(true);
+    ui->handle->setDisabled(true);
 
     // инициализация источника РИ
     rap = new RAPEltechMED;
@@ -87,7 +88,7 @@ MainWindow::~MainWindow()
 
 
     // отключение и осовобождение памяти для приемника РИ
-
+    if(ui->comboBox_2 <= 1)
     delete reciever;
 
     // отключение и осовобождение памяти для источника РИ
@@ -248,6 +249,8 @@ void MainWindow::on_Start_AutoScan_clicked()
         reciever->SetAccumulationTime(AccumulationTime);
         // включение источника РИ
 
+
+
         if (ui->comboBox_2->currentIndex() == 1)
         {
             MakeDarkImage();
@@ -313,6 +316,8 @@ void MainWindow::onGetData(ushort * tdata)
             if (CountOfShoot == 0)
             {
                 qDebug() << "mainwindow :: create ini";
+
+                MakeConfig(); // конфигурационный файл для восстановления проекций
 
                 // создание ini-файла с параметрами съемки
                 QString Time_start = QTime::currentTime().toString("hh-mm-ss");
@@ -1023,4 +1028,99 @@ void MainWindow::on_comboBox_2_currentIndexChanged(int index)
     }
     ui->comboBox_2->setDisabled(true);
     ui->Start_AutoScan->setDisabled(false);
+    ui->handle->setDisabled(false);
+}
+
+void MainWindow::MakeConfig()
+{
+    QSettings *setting = new QSettings ( FileDirectory + "s_.log" , QSettings::IniFormat);
+    setting->setValue("System/Scanner" , "MEVLINDET-1");
+    setting->setValue("System/Instrument S/N" , "10H03060");
+    setting->setValue("System/Software" , "Version 1. 1 (build 3)");
+    setting->setValue("System/Home Directory" , "C:\\");
+    setting->setValue("System/Source Type" , "RTW 60/100");
+    setting->setValue("System/Camera" , "SHT MR285MC");
+    setting->setValue("System/Camera Pixel Size (um)" , 200);
+    setting->setValue("System/CameraXYRatio" , 1.0);
+
+    setting->setValue("Acquisition/Data Directory" , "D:\004 - Projection data\implant-200\s_");
+    setting->setValue("Acquisition/Filename Prefix" , "s_");
+    setting->setValue("Acquisition/Number Of Files" , ui->NumberOfSteps->text().toInt());
+    setting->setValue("Acquisition/Number Of Rows" , IMAGE_HEIGHT);
+    setting->setValue("Acquisition/Number Of Columns" , IMAGE_WIDTH);
+    setting->setValue("Acquisition/Optical Axis (line)" , "OpticalAxis");
+    setting->setValue("Acquisition/Object to Source (mm)" , "ObjectToSource");
+    setting->setValue("Acquisition/Camera to Source" , "CameraToSource");
+
+    setting->setValue("Acquisition/Source Voltage (kV)" , ui->U_Auto->text().toInt());
+    setting->setValue("Acquisition/Source Current (uA)" , ui->I_Auto->text().toInt());
+    setting->setValue("Acquisition/Image Pixel Size (um)" ,"ImagePixelSize");
+    setting->setValue("Acquisition/Scaled Image Pixel Size (um)" ,"ScaledImagePixelSize");
+    setting->setValue("Acquisition/Image Format" , "TIFF");
+    setting->setValue("Acquisition/Depth (bits)" , "Depth");
+    setting->setValue("Acquisition/Screen LUT" , "ScreenLUT");
+    setting->setValue("Acquisition/Exposure(ms)" ,"Exposure");
+    setting->setValue("Acquisition/Rotation Step (deg)" , "RotationStep");
+    setting->setValue("Acquisition/Use 360 Rotation" , "YES");
+    setting->setValue("Acquisition/Scanning position" , "ScanningPosition");
+    setting->setValue("Acquisition/Flat Field Correction" ,"OFF" );
+    setting->setValue("Acquisition/Sharpening (%)" , "Sharpening");
+    setting->setValue("Acquisition/Random Movement" , "OFF");
+    setting->setValue("Acquisition/Geometrical Correction" , "ON" );
+    setting->setValue("Acquisition/Filter" , "Cu 2mm");
+    setting->setValue("Acquisition/Rotation Direction" , "CC");
+    setting->setValue("Acquisition/Type of Detector Motion" , "STEP AND SHOOT");
+    setting->setValue("Acquisition/Scanning Trajectory" , "ROUND");
+    setting->setValue("Acquisition/Number of connected scans" , 1);
+    setting->setValue("Acquisition/Study Date and Time" , "Dec 14, 2010  16:58:03");
+    setting->setValue("Acquisition/Scan duration" , "00:06:13");
+
+    setting->setValue("Reconstruction/Reconstruction Program" , "NRecon");
+    setting->setValue("Reconstruction/Program Version" , "Version: 1.6.10.2");
+    setting->setValue("Reconstruction/Program Home Directory" , "D:\001 - Dist\CTAn+CTVol");
+    setting->setValue("Reconstruction/Reconstruction engine" , "GPUReconServer");
+    setting->setValue("Reconstruction/Engine version" , "Version: 1.6.10");
+    setting->setValue("Reconstruction/Reconstruction from batch" , "No");
+    setting->setValue("Reconstruction/Postalignment" , "Postalignment");
+    setting->setValue("Reconstruction/Reconstruction servers" , "DESKTOP-6AGGSFS");
+    setting->setValue("Reconstruction/Dataset Origin" , "MEVLINDET-1");
+    setting->setValue("Reconstruction/Dataset Prefix" , "s_");
+    setting->setValue("Reconstruction/Dataset Directory" , "D:\004 - Projection data\semka-200");
+    setting->setValue("Reconstruction/Output Directory" , "D:\004 - Projection data\semka-200");
+    setting->setValue("Reconstruction/Time and Date" , "Dec 18, 2015  18:31:52");
+    setting->setValue("Reconstruction/First Section" , "First Section");
+    setting->setValue("Reconstruction/Last Section" , "Last Section");
+    setting->setValue("Reconstruction/Reconstruction duration per slice (seconds)" , "ReconstructionDurationPerSlice");
+    setting->setValue("Reconstruction/Total reconstruction time (484 slices) in seconds" , "TotalReconstructionTime");
+    setting->setValue("Reconstruction/Section to Section Step" , 1);
+    setting->setValue("Reconstruction/Sections Count" , 484);
+    setting->setValue("Reconstruction/Result File Type" , "BMP");
+    setting->setValue("Reconstruction/Result File Header Length" , 1134);
+    setting->setValue("Reconstruction/Result Image Width (pixels)" , 1536);
+    setting->setValue("Reconstruction/Result Image Height (pixels)" , 1536);
+    setting->setValue("Reconstruction/Pixel Size (um)" , "PixelSize");
+    setting->setValue("Reconstruction/Reconstruction Angular Range (deg)" , 360.00);
+    setting->setValue("Reconstruction/Use 180+" , "OFF");
+    setting->setValue("Reconstruction/Angular Step (deg)" , 1.8000);
+    setting->setValue("Reconstruction/Smoothing" , 0);
+    setting->setValue("Reconstruction/Ring Artifact Correction" , 0);
+    setting->setValue("Reconstruction/Draw Scales" , "ON");
+    setting->setValue("Reconstruction/Object Bigger than FOV" , "OFF");
+    setting->setValue("Reconstruction/Reconstruction from ROI" , "OFF");
+    setting->setValue("Reconstruction/Filter cutoff relative to Nyquist frequency" , 100);
+    setting->setValue("Reconstruction/Filter type" , 0);
+    setting->setValue("Reconstruction/Filter type description" , "Hamming (Alpha=0.54)");
+    setting->setValue("Reconstruction/Undersampling factor" , "");
+    setting->setValue("Reconstruction/Threshold for defect pixel mask (%)" , 0);
+    setting->setValue("Reconstruction/Beam Hardening Correction" , 20);
+    setting->setValue("Reconstruction/CS Static Rotation (deg)" , 0);
+    setting->setValue("Reconstruction/Minimum for CS to Image Conversion" , -0.003627);
+    setting->setValue("Reconstruction/Maximum for CS to Image Conversion" , 0.012202);
+    setting->setValue("Reconstruction/HU Calibration" , "OFF");
+    setting->setValue("Reconstruction/BMP LUT" , 0);
+    setting->setValue("Reconstruction/Cone-beam Angle Horiz.(deg)" , 49.661854);
+    setting->setValue("Reconstruction/Cone-beam Angle Vert.(deg)" , 39.260609);
+    setting->sync();
+
+    service->deletespace(FileDirectory + "s_.log");
 }

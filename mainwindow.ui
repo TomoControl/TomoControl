@@ -732,10 +732,10 @@
           <bool>false</bool>
          </property>
          <property name="currentText">
-          <string notr="true">AlphaCam</string>
+          <string notr="true">Сhoose reciever</string>
          </property>
          <property name="currentIndex">
-          <number>0</number>
+          <number>2</number>
          </property>
          <property name="duplicatesEnabled">
           <bool>false</bool>
