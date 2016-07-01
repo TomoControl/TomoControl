@@ -548,7 +548,6 @@ void MainWindow::onGetData(ushort * tdata)
             CountOfDarkImage ++;
             QString NameForSaveImage;
             NameForSaveImage = QString("DarkImage%1.raw").arg(CountOfDarkImage);
-            chooseDirectory(1);
             QFile file(FileDirectory + NameForSaveImage);
             if (!file.open(QIODevice::WriteOnly))
             {
@@ -606,11 +605,9 @@ void MainWindow::on_comboBox_currentIndexChanged(int index)
 void MainWindow::on_load_image_clicked()
 {
     ui->comboBox->clear();
-    chooseDirectory(4);
     uchar CountOfImage;
     QSettings *setting_stop = new QSettings ( FileDirectory, QSettings::IniFormat );
     CountOfImage = setting_stop->value("NumberOfImage" , 0).toInt();
-    chooseDirectory(2);
     for(uint i = 1; i <= CountOfImage; i++)
     { // подгрузка в комбобокc при автосканировании
         QString CheckedImage;
@@ -630,7 +627,6 @@ void MainWindow::on_convert_image_clicked()
 
 void MainWindow::convertToTiff()
 {
-    chooseDirectory(4);
     QString CurrentPicture;
     ushort CountOfImage;
     ushort * dData;
@@ -640,7 +636,6 @@ void MainWindow::convertToTiff()
     QSettings *setting_2 = new QSettings (  FileDirectory , QSettings::IniFormat ); // &\? directory of .ini
     CountOfImage = setting_2->value("NumberOfImage" , 0).toInt();
     qDebug() << "Конвертирование:: Число изображений для конвертации:" << CountOfImage;
-    chooseDirectory(2);
     int min = 62341;
     int max = 0;
     short brCalMean = 0;
@@ -768,7 +763,6 @@ void MainWindow::convertToTiff()
 
 void MainWindow::convertTo8Bit()
 {
-    chooseDirectory(4);
     QString CurrentPicture;
     ushort CountOfImage;
     ushort * dData;
@@ -778,7 +772,6 @@ void MainWindow::convertTo8Bit()
     QSettings *setting_2 = new QSettings (  FileDirectory , QSettings::IniFormat ); // &\? directory of .ini
     CountOfImage = setting_2->value("NumberOfImage" , 0).toInt();
     qDebug() << "Конвертирование convertTo8Bit:: Число изображений для конвертации:" << CountOfImage;
-    chooseDirectory(2);
     for (uint i = 1; i <= CountOfImage; i++)
     {
         if (i < 10) CurrentPicture = QString("/image_000%1.raw").arg(i);
@@ -870,7 +863,6 @@ void MainWindow::on_SaveAutoContrast_clicked()
 
 void MainWindow::on_LoadAutoContrast_clicked()
 {
-    chooseDirectory(5);
     QSettings *setting = new QSettings ( FileDirectory , QSettings::IniFormat);
     uchar posLow , posHigh , height , width;
     posLow = setting->value("left_limit").toInt();
@@ -882,7 +874,6 @@ void MainWindow::on_LoadAutoContrast_clicked()
     x1 = BITS * width/(270-6);
     x2 = BITS * posHigh/(270-6);
     frame->onChangeHistogrammWidget(x1,x2);
-    chooseDirectory(2);
 }
 
 // проверка корректности ввода желаемого числа проекций
@@ -1013,12 +1004,12 @@ void MainWindow::on_comboBox_2_currentIndexChanged(int index)
 void MainWindow::SetUIData()
 {
     QSettings *setting = new QSettings ( QDir::currentPath() + "LastValue.ini" , QSettings::IniFormat);
-    ui->NumberOfSteps->setText(setting->value("NumberOfImage"));
-    ui->U_Auto->setText(setting->value("Voltage"));
-    ui->I_Auto->setText(setting->value("Current"));
-    ui->Compare->setText(setting->value("IntensiveCorrection"));
-    ui->TimeCorrect->setText(setting->value("TimeCorrect"));
-    ui->Exposure->setText(setting->value("Exposure"));
+    ui->NumberOfSteps->setText(setting->value("NumberOfImage").toString());
+    ui->U_Auto->setText(setting->value("Voltage").toString());
+    ui->I_Auto->setText(setting->value("Current").toString());
+    ui->Compare->setText(setting->value("IntensiveCorrection").toString());
+    ui->TimeCorrect->setText(setting->value("TimeCorrect").toString());
+    ui->Exposure->setText(setting->value("Exposure").toString());
     ui->comboBox_2->setDisabled(true);
     ui->Start_AutoScan->setDisabled(false);
     ui->handle->setDisabled(false);

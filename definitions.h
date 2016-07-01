@@ -5,12 +5,12 @@
 //#define IMAGE_WIDTH 3072
 //#define IMAGE_HEIGHT 2368
 
-//#define IMAGE_WIDTH 1536
-//#define IMAGE_HEIGHT 1184
+#define IMAGE_WIDTH 1536
+#define IMAGE_HEIGHT 1184
 
 // mltcam
-#define IMAGE_WIDTH 2304
-#define IMAGE_HEIGHT 2944
+//#define IMAGE_WIDTH 2304
+//#define IMAGE_HEIGHT 2944
 
 #define BUFFER_COUNT ( 1 )
 
@@ -21,7 +21,7 @@
 
 #define MAX_FREQUENCY 5000
 
-#define NUMBER_OF_DARK_IMAGE 3
+#define NUMBER_OF_DARK_IMAGE 0
 
 #define THRESHOLD 200 // порог определения тест-объекта при калибровке источника
 
