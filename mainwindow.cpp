@@ -60,6 +60,12 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->Start_AutoScan->setDisabled(true);
     ui->handle->setDisabled(true);
+    ui->TimeCorrect->setDisabled(true);
+    ui->Exposure->setDisabled(true);
+    ui->Compare->setDisabled(true);
+    ui->I_Auto->setDisabled(true);
+    ui->U_Auto->setDisabled(true);
+    ui->NumberOfSteps->setDisabled(true);
 
     // инициализация источника РИ
     rap = new RAPEltechMED;
@@ -245,6 +251,8 @@ void MainWindow::on_Start_AutoScan_clicked()
         if(!ui->xray_signal->isChecked())
         {
             connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
+            connect(rap,SIGNAL(changeI(uint)),this,SLOT(onChangeI(uint)));
+            connect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
         }
         connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
         connect(this, SIGNAL(nextStep(int,int)), stepmotor, SLOT(calculate_go(int,int)));
@@ -294,6 +302,8 @@ void MainWindow::finish_autoscan()
 {
     // отключение соединений, необходимых для автосканирования
     disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
+    disconnect(rap,SIGNAL(changeI(uint)),this,SLOT(onChangeI(uint)));
+    disconnect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
     disconnect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
     disconnect(this, SIGNAL(nextStep(int,int)), stepmotor, SLOT(calculate_go(int,int)));
     disconnect(stepmotor, SIGNAL(continue_move()), reciever, SLOT(AcquireImage()));
@@ -997,10 +1007,30 @@ void MainWindow::on_comboBox_2_currentIndexChanged(int index)
     default:
         break;
     }
+    SetUIData();
+}
+
+void MainWindow::SetUIData()
+{
+    QSettings *setting = new QSettings ( QDir::currentPath() + "LastValue.ini" , QSettings::IniFormat);
+    ui->NumberOfSteps->setText(setting->value("NumberOfImage"));
+    ui->U_Auto->setText(setting->value("Voltage"));
+    ui->I_Auto->setText(setting->value("Current"));
+    ui->Compare->setText(setting->value("IntensiveCorrection"));
+    ui->TimeCorrect->setText(setting->value("TimeCorrect"));
+    ui->Exposure->setText(setting->value("Exposure"));
     ui->comboBox_2->setDisabled(true);
     ui->Start_AutoScan->setDisabled(false);
     ui->handle->setDisabled(false);
+    ui->TimeCorrect->setDisabled(false);
+    ui->Exposure->setDisabled(false);
+    ui->Compare->setDisabled(false);
+    ui->I_Auto->setDisabled(false);
+    ui->U_Auto->setDisabled(false);
+    ui->NumberOfSteps->setDisabled(false);
 }
+
+
 
 void MainWindow::MakeConfig()
 {

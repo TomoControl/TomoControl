@@ -120,6 +120,7 @@ private slots:
     void StartAutoScan();
     void MakeDarkImage();
     void MakeConfig();
+    void SetUIData();
 
 private:
     Ui::MainWindow *ui;
