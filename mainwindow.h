@@ -85,6 +85,7 @@ signals:
     void rap_off();
     void move_on(int, Axes_Mask);
     void finish();
+    void save_positions();
 
 public slots:
 
@@ -93,6 +94,7 @@ public slots:
     void source_calibration();
     void xray();
     void finish_calibration();
+    void save_elements_position();
 
 private slots:
 

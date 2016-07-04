@@ -36,9 +36,9 @@ void stepmotor_rotate::initialization(QHostAddress Source, QHostAddress Destinat
     make_reset(); //сброс
     List.clear(); // очистка списка
 
-    show_current_position position;
+
     // read from settings.ini
-   /* if (ControllerNumber == 1)
+    /* if (ControllerNumber == 1)
     {
         QSettings *setting_2 = new QSettings ( "settings.ini" , QSettings::IniFormat );
         position = {0};
@@ -228,13 +228,10 @@ limits_position stepmotor_rotate::get_limits()
 // getter на текущие координаты
 show_current_position stepmotor_rotate::get_current_position()
 {
-    show_current_position positiont;
-    positiont.Position_1 = Position[2];
-    positiont.Position_2 = Position[1];
-    positiont.Position_3 = Position[0];
-    positiont.Position_4 = 0;
-    positiont.Position_5 = 0;
-    positiont.Position_6 = 0;
+    show_current_position pos;
+    pos.Position_1 = Position[2];
+    pos.Position_2 = Position[1];
+    pos.Position_3 = Position[0];
     return positiont;
 }
 

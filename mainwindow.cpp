@@ -74,13 +74,20 @@ MainWindow::MainWindow(QWidget *parent) :
     // установление соединений
     connect(frame, SIGNAL(histCalculated(ushort*)), graphicsScene, SLOT(onHistCalculated(ushort*)));
     connect(graphicsScene, SIGNAL(changeHistOutput(int,int)), frame, SLOT(onChangeHistogrammWidget(int,int)));
+
+    connect(this,SIGNAL(save_positions()),this,SLOT(save_elements_position())); // goto?  Сохранение положения двигателей при выключении (или каждый раз после перемещения)
 }
 
 MainWindow::~MainWindow()
 {
+    emit save_positions();
     // разрыв соединений
     disconnect(frame, SIGNAL(histCalculated(ushort*)), graphicsScene, SLOT(onHistCalculated(ushort*)));
     disconnect(graphicsScene, SIGNAL(changeHistOutput(int,int)), frame, SLOT(onChangeHistogrammWidget(int,int)));
+
+    disconnect(this,SIGNAL(save_positions()),this,SLOT(save_elements_position()));
+//    disconnect(stepmotor,SIGNAL(save_positions()),this,SLOT(save_elements_position()));
+//    disconnect(stepmotor_2,SIGNAL(save_positions()),this,SLOT(save_elements_position()));
 
     QSettings *setting = new QSettings ( QDir::currentPath() + "LastValue.ini" , QSettings::IniFormat);
     setting->setValue("NumberOfImage" , ui->NumberOfSteps->text().toInt());
@@ -122,16 +129,14 @@ void MainWindow::myTimer()    //действие по таймеру
 
     show = stepmotor->get_current_position();
     show_2 = stepmotor_2->get_current_position();
-   // show_2.Position_1 = show_2.Position_3;
 
-//    show.Position_1 /= 40;
-//    show.Position_2 /= 40;
-//    show.Position_3 /= 40;
+    show.Position_1 /= 640; // перевод в мм
+    show.Position_2 /= 640;
+    show.Position_3 /= 640;
 
-//    show_2.Position_1 /= 40;
-//    show_2.Position_2 /= 40;
-//    show_2.Position_3 /= 40;
-
+    show_2.Position_1 /= 640;
+    show_2.Position_2 /= 640;
+    show_2.Position_3 /= 640;
 
     ui->pos1->setText(QString::number(show.Position_1));
     ui->pos2->setText(QString::number(show.Position_2));
@@ -142,8 +147,7 @@ void MainWindow::myTimer()    //действие по таймеру
     ui->pos6->setText(QString::number(show_2.Position_3));
 
     // отображение текущего шага сканирования
-    ui->current_step->setText(QString::number(CountOfShoot));
-
+    ui->current_step->setText(QString::number(CountOfShoot));   
     // отображение ошибок
     //show_errors();
 }
@@ -1048,7 +1052,6 @@ void MainWindow::MakeConfig()
     setting->setValue("System/Camera Pixel Size (um)" , QString::number(PixelSize));
     setting->setValue("System/CameraXYRatio" , QString::number(1.0));
 
-    //setting->setValue("Acquisition/Data Directory" , "D:\004 - Projection data\implant-200\s_");
     setting->setValue("Acquisition/Filename Prefix" , "s_");
     setting->setValue("Acquisition/Number Of Files" , QString::number(ui->NumberOfSteps->text().toInt()));
     setting->setValue("Acquisition/Number Of Rows" , QString::number(IMAGE_HEIGHT));
@@ -1067,20 +1070,30 @@ void MainWindow::MakeConfig()
     setting->setValue("Acquisition/Exposure(ms)" , QString::number(ui->Exposure->text().toInt()));
     setting->setValue("Acquisition/Rotation Step (deg)" , QString::number(360.0 / (float)ui->NumberOfSteps->text().toInt()));
     setting->setValue("Acquisition/Use 360 Rotation" , "YES");
-    //setting->setValue("Acquisition/Scanning position" , "ScanningPosition");
     setting->setValue("Acquisition/Flat Field Correction" ,"OFF" );
     setting->setValue("Acquisition/Sharpening (%)" , "Sharpening");
-    //setting->setValue("Acquisition/Random Movement" , "OFF");
     setting->setValue("Acquisition/Geometrical Correction" , "ON" );
-    //setting->setValue("Acquisition/Filter" , "Cu 2mm");
     setting->setValue("Acquisition/Rotation Direction" , "CC");
     setting->setValue("Acquisition/Type of Detector Motion" , "STEP AND SHOOT");
-    //setting->setValue("Acquisition/Scanning Trajectory" , "ROUND");
-    //setting->setValue("Acquisition/Number of connected scans" , 1);
-    //setting->setValue("Acquisition/Study Date and Time" , "Dec 14, 2010  16:58:03");
-    //setting->setValue("Acquisition/Scan duration" , "00:06:13");
 
     setting->sync();
 
     service->deletespace(FileDirectory + "s_.log");
+}
+
+void MainWindow::save_elements_position()
+{
+    QSettings *setting = new QSettings ( FileDirectory + "Posotions" , QSettings::IniFormat);
+    show_current_position motor, motor_2;
+    motor = stepmotor->get_current_position();
+    motor_2 = stepmotor_2->get_current_position();
+
+    setting->setValue("motor/axe Y" , motor.Position_2);
+    setting->setValue("motor/axe Z" , motor.Position_3);
+
+    setting->setValue("motor_2/axe X" , motor_2.Position_1);
+    setting->setValue("motor_2/axe Y" , motor_2.Position_2);
+    setting->setValue("motor_2/axe Z" , motor_2.Position_3);
+
+    setting->sync();
 }

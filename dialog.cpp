@@ -9,7 +9,6 @@ Dialog::Dialog(QWidget *parent) :
     stat1 = 0;
     Layout = new QVBoxLayout;
     frame = new myFrame;
-    //ui->frame->setLayout(Layout);
     ui->scrollArea->show();
     ui->scrollArea->setLayout(Layout);
 }
