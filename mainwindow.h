@@ -51,7 +51,6 @@ public:
     uint SourcePort , DestinationPort;
     Dialog * dialog;
     plcmwidget * plcmwi;
-    service_functions *service;
     uchar selected_mode , calb_step , selected_cam , CountOfDarkImage;
     int compare , difference;
     int cent_1 , cent_2;
@@ -85,7 +84,6 @@ signals:
     void rap_off();
     void move_on(int, Axes_Mask);
     void finish();
-    void save_positions();
 
 public slots:
 
@@ -94,7 +92,6 @@ public slots:
     void source_calibration();
     void xray();
     void finish_calibration();
-    void save_elements_position();
 
 private slots:
 

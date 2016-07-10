@@ -28,7 +28,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     dialog = new Dialog;
     plcmwi = new plcmwidget;
-    service = new service_functions;
 
     // создание поля для изображения
     frame = new myFrame;
@@ -41,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     // инициализация драйверов ШД
     stepmotor = new stepmotor_rotate;
-    stepmotor_2 = new stepmotor_rotate;
+    //stepmotor_2 = new stepmotor_rotate;
     Source = ("192.168.10.1");
     SourcePort = 1075;
     Destination = ("192.168.10.10");
@@ -52,7 +51,7 @@ MainWindow::MainWindow(QWidget *parent) :
     SourcePort = 1234;
     Destination = ("192.168.10.11");
     ControlNum = 2;
-    stepmotor_2->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
+    //stepmotor_2->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
 
     Timer = new QTimer;
     QObject::connect(Timer , SIGNAL(timeout()) , this, SLOT(myTimer()));
@@ -74,20 +73,13 @@ MainWindow::MainWindow(QWidget *parent) :
     // установление соединений
     connect(frame, SIGNAL(histCalculated(ushort*)), graphicsScene, SLOT(onHistCalculated(ushort*)));
     connect(graphicsScene, SIGNAL(changeHistOutput(int,int)), frame, SLOT(onChangeHistogrammWidget(int,int)));
-
-    connect(this,SIGNAL(save_positions()),this,SLOT(save_elements_position())); // goto?  Сохранение положения двигателей при выключении (или каждый раз после перемещения)
 }
 
 MainWindow::~MainWindow()
 {
-    emit save_positions();
     // разрыв соединений
     disconnect(frame, SIGNAL(histCalculated(ushort*)), graphicsScene, SLOT(onHistCalculated(ushort*)));
     disconnect(graphicsScene, SIGNAL(changeHistOutput(int,int)), frame, SLOT(onChangeHistogrammWidget(int,int)));
-
-    disconnect(this,SIGNAL(save_positions()),this,SLOT(save_elements_position()));
-//    disconnect(stepmotor,SIGNAL(save_positions()),this,SLOT(save_elements_position()));
-//    disconnect(stepmotor_2,SIGNAL(save_positions()),this,SLOT(save_elements_position()));
 
     QSettings *setting = new QSettings ( QDir::currentPath() + "LastValue.ini" , QSettings::IniFormat);
     setting->setValue("NumberOfImage" , ui->NumberOfSteps->text().toInt());
@@ -96,16 +88,17 @@ MainWindow::~MainWindow()
     setting->setValue("Exposure" , ui->Exposure->text().toInt());
     setting->setValue("IntensiveCorrection" , ui->Compare->text().toInt());
     setting->setValue("TimeCorrect" , ui->TimeCorrect->text().toInt());
+    setting->setValue("State_checkbox" , ui->with_rotate->isChecked());
     setting->sync();
 
     // отключение и осовобождение памяти для драйверов ШД
     Timer->stop();
     QObject::disconnect(Timer , SIGNAL(timeout()) , this , SLOT(myTimer()));
     stepmotor->go_emergency();
-    stepmotor_2->go_emergency();
+    //stepmotor_2->go_emergency();
 
     delete stepmotor;
-    delete stepmotor_2;
+    //delete stepmotor_2;
     delete Timer;
 
 
@@ -128,26 +121,29 @@ void MainWindow::myTimer()    //действие по таймеру
     show_current_position show, show_2;
 
     show = stepmotor->get_current_position();
-    show_2 = stepmotor_2->get_current_position();
+    //show_2 = stepmotor_2->get_current_position();
+   // show_2.Position_1 = show_2.Position_3;
 
-    show.Position_1 /= 640; // перевод в мм
-    show.Position_2 /= 640;
-    show.Position_3 /= 640;
+//    show.Position_1 /= 40;
+//    show.Position_2 /= 40;
+//    show.Position_3 /= 40;
 
-    show_2.Position_1 /= 640;
-    show_2.Position_2 /= 640;
-    show_2.Position_3 /= 640;
+//    show_2.Position_1 /= 40;
+//    show_2.Position_2 /= 40;
+//    show_2.Position_3 /= 40;
+
 
     ui->pos1->setText(QString::number(show.Position_1));
     ui->pos2->setText(QString::number(show.Position_2));
     ui->pos3->setText(QString::number(show.Position_3));
 
-    ui->pos4->setText(QString::number(show_2.Position_1));
-    ui->pos5->setText(QString::number(show_2.Position_2));
-    ui->pos6->setText(QString::number(show_2.Position_3));
+    //ui->pos4->setText(QString::number(show_2.Position_1));
+    //ui->pos5->setText(QString::number(show_2.Position_2));
+    //ui->pos6->setText(QString::number(show_2.Position_3));
 
     // отображение текущего шага сканирования
-    ui->current_step->setText(QString::number(CountOfShoot));   
+    ui->current_step->setText(QString::number(CountOfShoot));
+
     // отображение ошибок
     //show_errors();
 }
@@ -172,10 +168,10 @@ void MainWindow::on_handle_clicked()
     connect(dialog,SIGNAL(make_shoot(uchar,uchar,int)),this,SLOT(make_shoot(uchar,uchar,int)));
     connect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor,SLOT(manual_movement(Axes_Mask,int)));
     connect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor,SLOT(stop_movement(Axes_Mask)));
-    connect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
-    connect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
+    //connect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
+   // connect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
     connect(dialog,SIGNAL(go(int,Axes_Mask)),stepmotor,SLOT(go_to(int,Axes_Mask)));
-    connect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
+    //connect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
 
     if(!ui->xray_signal->isChecked())
     {
@@ -209,10 +205,10 @@ void MainWindow::close_dialog()
     disconnect(dialog,SIGNAL(close_dialog()),this,SLOT(close_dialog()));
     disconnect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor,SLOT(manual_movement(Axes_Mask,int)));
     disconnect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor,SLOT(stop_movement(Axes_Mask)));
-    disconnect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
-    disconnect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
+    //disconnect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
+    //disconnect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
     disconnect(dialog,SIGNAL(go(int,Axes_Mask)),stepmotor,SLOT(go_to(int,Axes_Mask)));
-    disconnect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
+    //disconnect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
     disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
     disconnect(reciever, SIGNAL(GetDataComplete(ushort*)),dialog,SLOT(set_image(ushort*)));
     disconnect(dialog,SIGNAL(rap_off()),rap,SLOT(off()));
@@ -402,14 +398,16 @@ void MainWindow::onGetData(ushort * tdata)
 
             if (!needRenew)
             {
-                // сохранение среднего значения пиксела на снимке и времени экспозиции
-                QString txt = QString("Average %1 AccumulationTime %2").arg(CountOfShoot).arg(AccumulationTime);
+                // сохранение среднего значения пиксела на снимке
+                QString txt = QString("Average%1").arg(CountOfShoot);
                 settingtxt->setValue(txt,avpixel);
+                //settingtxt->setValue("avpixel" , avpixel);
+                //settingtxt->setValue(txt, AccumulationTime);
                 settingtxt->sync();
 
                 // сохранение изображений в raw-формате
                 QString NameForSaveImage;
-                NameForSaveImage = service->RenameOfImages(CountOfShoot);
+                NameForSaveImage = service_functions::RenameOfImages(CountOfShoot);
                 QFile file(FileDirectory + NameForSaveImage);
                 if (!file.open(QIODevice::WriteOnly))
                 {
@@ -488,10 +486,10 @@ void MainWindow::onGetData(ushort * tdata)
                 qDebug() << "calb step = 1";
                 int step;
                 Axes_Mask axes;
-                axes = stepmotor_2->reset_axes_mask();
+                //axes = stepmotor_2->reset_axes_mask();
                 axes.a4 = 1;
                 step = 10000;
-                stepmotor_2->go_to_for_calb(step,axes);
+                //stepmotor_2->go_to_for_calb(step,axes);
                 break;
             }
             case 2:
@@ -499,19 +497,19 @@ void MainWindow::onGetData(ushort * tdata)
                 qDebug() << "calb step = 2";
                 int step;
                 Axes_Mask axes;
-                axes = stepmotor_2->reset_axes_mask();
+                //axes = stepmotor_2->reset_axes_mask();
                 axes.a1 = 1;
 
                 if(difference > 5 )
                 {step = ~step_size; qDebug() << difference << "difference";}
                 if(difference < -5 ) {step = step_size;qDebug() << difference << "difference_22222";}
-                stepmotor_2->go_to_for_calb(step,axes);
+                //stepmotor_2->go_to_for_calb(step,axes);
 
                 // возвращение на первую линию
                 step = ~10000;
-                axes = stepmotor_2->reset_axes_mask();
+                //axes = stepmotor_2->reset_axes_mask();
                 axes.a4 = 1;
-                stepmotor_2->go_to(step,axes);
+                //stepmotor_2->go_to(step,axes);
                 calb_step = 0;
                 break;
             }
@@ -531,6 +529,7 @@ void MainWindow::onGetData(ushort * tdata)
             if((calb_step == 0) && (difference > 5))
             {
                 qDebug() << "calb diff";
+                //difference = 0;
                 cent_1 = 0;
                 cent_2 = 0;
                 step_size /= 2;
@@ -541,7 +540,7 @@ void MainWindow::onGetData(ushort * tdata)
             break;
         }
         case 3:
-            frame->setRAWImage(dData);
+            //frame->setRAWImage(dData);
             rap->off();
             break;
         case 4:
@@ -549,7 +548,6 @@ void MainWindow::onGetData(ushort * tdata)
             CountOfDarkImage ++;
             QString NameForSaveImage;
             NameForSaveImage = QString("DarkImage%1.raw").arg(CountOfDarkImage);
-            chooseDirectory(1);
             QFile file(FileDirectory + NameForSaveImage);
             if (!file.open(QIODevice::WriteOnly))
             {
@@ -607,11 +605,9 @@ void MainWindow::on_comboBox_currentIndexChanged(int index)
 void MainWindow::on_load_image_clicked()
 {
     ui->comboBox->clear();
-    chooseDirectory(4);
     uchar CountOfImage;
     QSettings *setting_stop = new QSettings ( FileDirectory, QSettings::IniFormat );
     CountOfImage = setting_stop->value("NumberOfImage" , 0).toInt();
-    chooseDirectory(2);
     for(uint i = 1; i <= CountOfImage; i++)
     { // подгрузка в комбобокc при автосканировании
         QString CheckedImage;
@@ -631,17 +627,16 @@ void MainWindow::on_convert_image_clicked()
 
 void MainWindow::convertToTiff()
 {
-    chooseDirectory(4);
     QString CurrentPicture;
     ushort CountOfImage;
     ushort * dData;
     ushort * brCalData;
     dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
     brCalData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
-    QSettings *setting_2 = new QSettings (  FileDirectory , QSettings::IniFormat ); // &\? directory of .ini
+    QString File = QFileDialog::getOpenFileName(0,"Выбор файла", "", "ShootingMode.ini");
+    QSettings *setting_2 = new QSettings (  File , QSettings::IniFormat ); // &\? directory of .ini
     CountOfImage = setting_2->value("NumberOfImage" , 0).toInt();
     qDebug() << "Конвертирование:: Число изображений для конвертации:" << CountOfImage;
-    chooseDirectory(2);
     int min = 62341;
     int max = 0;
     short brCalMean = 0;
@@ -725,19 +720,19 @@ void MainWindow::convertToTiff()
             pixel = 0;
 
             // Коррекция первого файла по автоматически вычисленным границам
-            for (int k = 0; k < IMAGE_HEIGHT - 1; k++)
+            for (int k=0;k<IMAGE_HEIGHT-1;k++)
             {
-                for (int j = 0; j < IMAGE_WIDTH - 1; j++)
+                for (int j=0; j<IMAGE_WIDTH-1; j++)
                 {
                     if (ui->brCalibration->isChecked())
-                        calFactor = (float)brCalMean / (float)brCalData[(k * IMAGE_WIDTH) + j];
+                        calFactor = (float)brCalMean/(float)brCalData[(k*IMAGE_WIDTH)+j];
 
-                    pixel = dData[(k * IMAGE_WIDTH) + j] * calFactor;
+                    pixel = dData[(k*IMAGE_WIDTH)+j]*calFactor;
                     pixel = 65535  * (pixel - min) / (max - min) ;
-                    if (pixel > 65535) pixel = 65535;
-                    if (pixel < 0) pixel = 0;
-                    if (ui->comboBox_2->currentIndex() == 1) dData[(k * IMAGE_WIDTH) + j] = pixel;
-                    else dData[(k * IMAGE_WIDTH) + j] = 65535 - pixel;
+                    if (pixel>65535) pixel = 65535;
+                    if (pixel<0) pixel = 0;
+                    if (ui->comboBox_2->currentIndex() == 1) dData[(k*IMAGE_WIDTH)+j] = pixel;
+                    else dData[(k*IMAGE_WIDTH)+j] = 65535 - pixel;
                 }
 
             }
@@ -746,18 +741,18 @@ void MainWindow::convertToTiff()
         {
             int pixel = 0;
             pixel = 0;
-            for (int k = 0;k < IMAGE_HEIGHT - 1; k++)
+            for (int k=0;k<IMAGE_HEIGHT-1;k++)
             {
-                for (int j = 0; j < IMAGE_WIDTH - 1; j++)
+                for (int j=0; j<IMAGE_WIDTH-1; j++)
                 {
                     if (ui->brCalibration->isChecked())
-                        calFactor = (float)brCalMean / (float)brCalData[(k * IMAGE_WIDTH) + j];
-                    pixel = dData[(k * IMAGE_WIDTH) + j] * calFactor;
+                        calFactor = (float)brCalMean/(float)brCalData[(k*IMAGE_WIDTH)+j];
+                    pixel = dData[(k*IMAGE_WIDTH)+j]*calFactor;
                     pixel = 65535 * (pixel - min) / (max - min);
-                    if (pixel > 65535) pixel = 65535;
-                    if (pixel < 0) pixel = 0;
-                    if (ui->comboBox_2->currentIndex() == 1) dData[(k * IMAGE_WIDTH) + j] = pixel;
-                    else dData[(k * IMAGE_WIDTH) + j] = 65535 - pixel;
+                    if (pixel>65535) pixel = 65535;
+                    if (pixel<0) pixel = 0;
+                    if (ui->comboBox_2->currentIndex() == 1) dData[(k*IMAGE_WIDTH)+j] = pixel;
+                    else dData[(k*IMAGE_WIDTH)+j] = 65535 - pixel;
                 }
             }
         }
@@ -769,17 +764,15 @@ void MainWindow::convertToTiff()
 
 void MainWindow::convertTo8Bit()
 {
-    chooseDirectory(4);
     QString CurrentPicture;
     ushort CountOfImage;
     ushort * dData;
     int avpixel = 0;
     int avpixel_new = 0;
-    dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
+    dData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
     QSettings *setting_2 = new QSettings (  FileDirectory , QSettings::IniFormat ); // &\? directory of .ini
     CountOfImage = setting_2->value("NumberOfImage" , 0).toInt();
     qDebug() << "Конвертирование convertTo8Bit:: Число изображений для конвертации:" << CountOfImage;
-    chooseDirectory(2);
     for (uint i = 1; i <= CountOfImage; i++)
     {
         if (i < 10) CurrentPicture = QString("/image_000%1.raw").arg(i);
@@ -801,12 +794,12 @@ void MainWindow::convertTo8Bit()
         {
             avpixel = dData[0];
             int pixel = 0;
-            for (int k = 0; k < 50; k++)
+            for (int k=0; k<50; k++)
             {
-                for (int j = 0; j < 50; j++)
+                for (int j=0; j<50; j++)
                 {
-                    pixel = dData[(k * IMAGE_WIDTH) + j];
-                    avpixel = (avpixel + pixel) / 2;
+                    pixel = dData[(k*IMAGE_WIDTH)+j];
+                    avpixel = (avpixel + pixel)/2;
                 }
             }
             qDebug() << "average" << avpixel;
@@ -815,38 +808,38 @@ void MainWindow::convertTo8Bit()
         {
             avpixel_new = dData[0];
             int pixel = 0;
-            for (int k = 0; k < 100; k++)
+            for (int k=0; k<100; k++)
             {
-                for (int j = 0; j < 100; j++)
+                for (int j=0; j<100; j++)
                 {
-                    pixel = dData[(k * IMAGE_WIDTH) + j];
-                    avpixel_new = (avpixel_new + pixel) / 2;
+                    pixel = dData[(k*IMAGE_WIDTH)+j];
+                    avpixel_new = (avpixel_new + pixel)/2;
                 }
             }
             qDebug() << "average_new do" << avpixel_new;
             avpixel_new -= avpixel;
             qDebug() << "average_new posle" << avpixel_new;
             pixel = 0;
-            for (int k = 0; k < IMAGE_HEIGHT - 1; k++)
+            for (int k=0;k<IMAGE_HEIGHT-1;k++)
             {
-                for (int j = 0; j < IMAGE_WIDTH - 1; j++)
+                for (int j=0; j<IMAGE_WIDTH-1; j++)
                 {
-                    pixel = dData[(k * IMAGE_WIDTH) + j] - avpixel_new;
-                    dData[(k * IMAGE_WIDTH) + j] = pixel;
+                    pixel = dData[(k*IMAGE_WIDTH)+j] - avpixel_new;
+                    dData[(k*IMAGE_WIDTH)+j] = pixel;
                 }
             }
         }
 
         QImage image(IMAGE_WIDTH, IMAGE_HEIGHT, QImage::Format_RGB32 );
         int pixel = 0;
-        for (int k = 0; k < IMAGE_HEIGHT - 1; k++)
+        for (int k=0;k<IMAGE_HEIGHT-1;k++)
         {
-            for (int j = 0; j < IMAGE_WIDTH - 1; j++)
+            for (int j=0; j<IMAGE_WIDTH-1; j++)
             {
-                pixel = dData[(k * IMAGE_WIDTH) + j] / 64;
+                pixel = dData[(k*IMAGE_WIDTH)+j]/ 64;
                 if (pixel > 255) pixel = 255;
                 if (pixel < 0) pixel = 0;
-                image.setPixel(j, k, QColor(pixel,pixel,pixel,255).rgba());
+                image.setPixel(j,k,QColor(pixel,pixel,pixel,255).rgba());
             }
         }
         image.save(FileDirectory + NameForSave);
@@ -856,6 +849,8 @@ void MainWindow::convertTo8Bit()
 
 void MainWindow::on_SaveAutoContrast_clicked()
 {
+//    chooseDirectory(4);
+//    FileDirectory.remove("ShootingMode.ini");
 //    FileDirectory += "AutoContrast.ini";
 //    QSettings *setting = new QSettings ( FileDirectory , QSettings::IniFormat);
 //    setting->setValue("left_limit" , 270 - graphicsScene->lineLow->rect().width());
@@ -863,12 +858,12 @@ void MainWindow::on_SaveAutoContrast_clicked()
 //    setting->setValue("height" , graphicsScene->lineLow->rect().height());
 //    setting->setValue("width" , graphicsScene->lineLow->rect().width());
 //    chooseDirectory(2);
+
     plcmwi->show();
 }
 
 void MainWindow::on_LoadAutoContrast_clicked()
 {
-    chooseDirectory(5);
     QSettings *setting = new QSettings ( FileDirectory , QSettings::IniFormat);
     uchar posLow , posHigh , height , width;
     posLow = setting->value("left_limit").toInt();
@@ -880,7 +875,6 @@ void MainWindow::on_LoadAutoContrast_clicked()
     x1 = BITS * width/(270-6);
     x2 = BITS * posHigh/(270-6);
     frame->onChangeHistogrammWidget(x1,x2);
-    chooseDirectory(2);
 }
 
 // проверка корректности ввода желаемого числа проекций
@@ -918,9 +912,9 @@ void MainWindow::on_Calibrate_clicked()
     AxeOfCalb_3 = 0;
     stepmotor->setCalibrAxe(AxeOfCalb_1 , AxeOfCalb_2 , AxeOfCalb_3);
     AxeOfCalb_3 = 1;
-    stepmotor_2->setCalibrAxe(AxeOfCalb_1 , AxeOfCalb_2 , AxeOfCalb_3);
+    //stepmotor_2->setCalibrAxe(AxeOfCalb_1 , AxeOfCalb_2 , AxeOfCalb_3);
     stepmotor->calibrate();
-    stepmotor_2->calibrate();
+    //stepmotor_2->calibrate();
 }
 
 
@@ -931,7 +925,7 @@ void MainWindow::source_calibration()
         // установление соединений для автосканирования
         connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
         connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
-        connect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
+        //connect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
         connect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
         selected_mode  = 2;
         status = 1;
@@ -960,7 +954,7 @@ void MainWindow::finish_calibration()
     rap->off();
     disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
     disconnect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
-    disconnect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
+    //disconnect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
     disconnect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
 
     // выключение источника, сброс индикации
@@ -992,13 +986,15 @@ void MainWindow::on_comboBox_2_currentIndexChanged(int index)
     switch (index)
     {
     case 0:
-        qDebug() << "Receiver - AlphaCam " << ui->comboBox_2->currentText();
+        qDebug() << "text0" << ui->comboBox_2->currentText();
         reciever = new AlphaCam;
+        //selected_reciever = 1;
         break;
     case 1:
-        qDebug() << "Receiver - MLTCam" << ui->comboBox_2->currentText();
+        qDebug() << "text1" << ui->comboBox_2->currentText();
         reciever = new MLTCam;
-        darkData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
+        darkData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
+        //selected_cam = 2;
         break;
     default:
         break;
@@ -1009,12 +1005,13 @@ void MainWindow::on_comboBox_2_currentIndexChanged(int index)
 void MainWindow::SetUIData()
 {
     QSettings *setting = new QSettings ( QDir::currentPath() + "LastValue.ini" , QSettings::IniFormat);
-    ui->NumberOfSteps->setText(setting->value("NumberOfImage"));
-    ui->U_Auto->setText(setting->value("Voltage"));
-    ui->I_Auto->setText(setting->value("Current"));
-    ui->Compare->setText(setting->value("IntensiveCorrection"));
-    ui->TimeCorrect->setText(setting->value("TimeCorrect"));
-    ui->Exposure->setText(setting->value("Exposure"));
+    ui->NumberOfSteps->setText(setting->value("NumberOfImage").toString());
+    ui->U_Auto->setText(setting->value("Voltage").toString());
+    ui->I_Auto->setText(setting->value("Current").toString());
+    ui->Compare->setText(setting->value("IntensiveCorrection").toString());
+    ui->TimeCorrect->setText(setting->value("TimeCorrect").toString());
+    ui->Exposure->setText(setting->value("Exposure").toString());
+    ui->with_rotate->setChecked(setting->value("State_checkbox").toBool(); // to test
     ui->comboBox_2->setDisabled(true);
     ui->Start_AutoScan->setDisabled(false);
     ui->handle->setDisabled(false);
@@ -1025,8 +1022,6 @@ void MainWindow::SetUIData()
     ui->U_Auto->setDisabled(false);
     ui->NumberOfSteps->setDisabled(false);
 }
-
-
 
 void MainWindow::MakeConfig()
 {
@@ -1039,7 +1034,7 @@ void MainWindow::MakeConfig()
     if (ui->comboBox_2->currentIndex() == 1)
         PixelSize = 50;
 
-    float ScaledPixelSize = (float)ObjectToSource * (float)PixelSize / (float)CameraToSource;
+    float ScaledPixelSize = (float)ObjectToSource*(float)PixelSize/(float)CameraToSource;
     qDebug() << ScaledPixelSize;
 
     QSettings *setting = new QSettings ( FileDirectory + "s_.log" , QSettings::IniFormat);
@@ -1052,6 +1047,7 @@ void MainWindow::MakeConfig()
     setting->setValue("System/Camera Pixel Size (um)" , QString::number(PixelSize));
     setting->setValue("System/CameraXYRatio" , QString::number(1.0));
 
+    //setting->setValue("Acquisition/Data Directory" , "D:\004 - Projection data\implant-200\s_");
     setting->setValue("Acquisition/Filename Prefix" , "s_");
     setting->setValue("Acquisition/Number Of Files" , QString::number(ui->NumberOfSteps->text().toInt()));
     setting->setValue("Acquisition/Number Of Rows" , QString::number(IMAGE_HEIGHT));
@@ -1063,37 +1059,27 @@ void MainWindow::MakeConfig()
     setting->setValue("Acquisition/Source Voltage (kV)" , QString::number(ui->U_Auto->text().toInt()));
     setting->setValue("Acquisition/Source Current (uA)" , QString::number(ui->I_Auto->text().toInt()));
     setting->setValue("Acquisition/Image Pixel Size (um)" , QString::number(PixelSize));
-    setting->setValue("Acquisition/Scaled Image Pixel Size (um)" , QString::number(int(ScaledPixelSize * 100) / 100));
+    setting->setValue("Acquisition/Scaled Image Pixel Size (um)" , QString::number(int(ScaledPixelSize*100)/100));
     setting->setValue("Acquisition/Image Format" , "TIFF");
     setting->setValue("Acquisition/Depth (bits)" , QString::number(16));
     setting->setValue("Acquisition/Screen LUT" , "ScreenLUT");
     setting->setValue("Acquisition/Exposure(ms)" , QString::number(ui->Exposure->text().toInt()));
-    setting->setValue("Acquisition/Rotation Step (deg)" , QString::number(360.0 / (float)ui->NumberOfSteps->text().toInt()));
+    setting->setValue("Acquisition/Rotation Step (deg)" , QString::number(360.0/(float)ui->NumberOfSteps->text().toInt()));
     setting->setValue("Acquisition/Use 360 Rotation" , "YES");
+    //setting->setValue("Acquisition/Scanning position" , "ScanningPosition");
     setting->setValue("Acquisition/Flat Field Correction" ,"OFF" );
     setting->setValue("Acquisition/Sharpening (%)" , "Sharpening");
+    //setting->setValue("Acquisition/Random Movement" , "OFF");
     setting->setValue("Acquisition/Geometrical Correction" , "ON" );
+    //setting->setValue("Acquisition/Filter" , "Cu 2mm");
     setting->setValue("Acquisition/Rotation Direction" , "CC");
     setting->setValue("Acquisition/Type of Detector Motion" , "STEP AND SHOOT");
+    //setting->setValue("Acquisition/Scanning Trajectory" , "ROUND");
+    //setting->setValue("Acquisition/Number of connected scans" , 1);
+    //setting->setValue("Acquisition/Study Date and Time" , "Dec 14, 2010  16:58:03");
+    //setting->setValue("Acquisition/Scan duration" , "00:06:13");
 
     setting->sync();
 
-    service->deletespace(FileDirectory + "s_.log");
-}
-
-void MainWindow::save_elements_position()
-{
-    QSettings *setting = new QSettings ( FileDirectory + "Posotions" , QSettings::IniFormat);
-    show_current_position motor, motor_2;
-    motor = stepmotor->get_current_position();
-    motor_2 = stepmotor_2->get_current_position();
-
-    setting->setValue("motor/axe Y" , motor.Position_2);
-    setting->setValue("motor/axe Z" , motor.Position_3);
-
-    setting->setValue("motor_2/axe X" , motor_2.Position_1);
-    setting->setValue("motor_2/axe Y" , motor_2.Position_2);
-    setting->setValue("motor_2/axe Z" , motor_2.Position_3);
-
-    setting->sync();
+    service_functions::deletespace(FileDirectory + "s_.log");
 }

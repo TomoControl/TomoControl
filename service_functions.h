@@ -15,8 +15,8 @@ public:
 signals:
 
 public slots:
-    QString RenameOfImages(ushort Count);
-    void deletespace(QString adress);
+    static QString RenameOfImages(ushort Count);
+    static void deletespace(QString adress);
 };
 
 #endif // SERVICE_FUNCTIONS_H
