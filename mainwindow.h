@@ -11,6 +11,7 @@
 #include <QDir>
 #include <QFileDialog>
 #include <QComboBox>
+#include <QThread>
 
 #include "alphacam.h"
 #include "rapeltechmed.h"
@@ -34,21 +35,23 @@ class MainWindow : public QMainWindow
 {
     Q_OBJECT
 
+
 public:
     explicit MainWindow(QWidget *parent = 0);
     ~MainWindow();
 
     QSettings * settingtxt;
-    stepmotor_rotate * stepmotor, * stepmotor_2;
+    QTimer * Timer;
+    QThread * thread_1, * thread_2;
+    QString FileDirectory;
+    QHostAddress Source , Destination;
+    uint SourcePort , DestinationPort;
+    stepmotor_rotate * stepmotor_1, * stepmotor_2;
     cam *reciever;
     RAPEltechMED * rap;
-    QTimer * Timer;
-    QString FileDirectory;
     myFrame * frame;
     tiff_image * tiff;
     myGraphicsScene * graphicsScene;
-    QHostAddress Source , Destination;
-    uint SourcePort , DestinationPort;
     Dialog * dialog;
     plcmwidget * plcmwi;
     uchar selected_mode , calb_step , selected_cam , CountOfDarkImage;

@@ -15,6 +15,8 @@
 class stepmotor_rotate : public QObject
 {
     Q_OBJECT
+    Q_PROPERTY(bool running READ running WRITE setRunning NOTIFY runningChanged)
+
 public:
     explicit stepmotor_rotate(QObject *parent = 0);
     ~stepmotor_rotate();
@@ -32,9 +34,9 @@ public:
     void calb_traj_data(uint i, int max_freq);
     void calibrate();
 
-
     void see_limits();
 
+    bool running() const; // thread
 
     list <QByteArray>::iterator iter;
     QUdpSocket * client;
@@ -55,6 +57,7 @@ public:
 
     QTimer * PacketTimer;
     bool lastPacket, MoveStatus;
+    bool m_running; // thread
 
     uchar status_of_moving;
     int status_calb;
@@ -73,11 +76,14 @@ public slots:
     void go_to(int step, Axes_Mask axes);
     void go_to_for_calb(int step, Axes_Mask axes);
     Axes_Mask reset_axes_mask();
+    void setRunning(bool running); // thread
 
 
 signals:
     void continue_move();
     void start_xray();
+    void runningChanged(bool running); // thread
+    void finished(); // thread
 
 private:
 

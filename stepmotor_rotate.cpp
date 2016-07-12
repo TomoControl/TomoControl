@@ -888,5 +888,6 @@ stepmotor_rotate::~stepmotor_rotate()
 {
     QObject::disconnect(PacketTimer, SIGNAL(timeout()), this, SLOT(myPacketTimer()));
     delete PacketTimer;
+    emit finished();
 }
 

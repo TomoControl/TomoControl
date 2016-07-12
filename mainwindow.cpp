@@ -39,15 +39,30 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->graphicsView->setScene(graphicsScene);
 
     // инициализация драйверов ШД
-    stepmotor = new stepmotor_rotate;
+    stepmotor_1 = new stepmotor_rotate;
     stepmotor_2 = new stepmotor_rotate;
+
+    // threads
+    thread_1 = new QThread;
+    thread_2 = new QThread;
+
+    connect(stepmotor_1, SIGNAL(finished()), thread_1, SLOT(terminate()));
+    connect(stepmotor_2, SIGNAL(finished()), thread_2, SLOT(terminate()));
+    stepmotor_1->moveToThread(thread_1);
+    stepmotor_2->moveToThread(thread_2);
+
+    stepmotor_1->setRunning(true);
+    stepmotor_2->setRunning(true);
+    thread_1.start();
+    thread_2.start();
+
     Source = ("192.168.10.1");
     SourcePort = 1075;
     Destination = ("192.168.10.10");
     DestinationPort = 5000;
     uchar ControlNum;
     ControlNum = 1;
-    stepmotor->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
+    stepmotor_1->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
     SourcePort = 1234;
     Destination = ("192.168.10.11");
     ControlNum = 2;
@@ -91,14 +106,19 @@ MainWindow::~MainWindow()
     setting->setValue("State_checkbox" , ui->with_rotate->isChecked());
     setting->sync();
 
+    stepmotor_1.setRunning(true);
+    stepmotor_2.setRunning(true);
+
     // отключение и осовобождение памяти для драйверов ШД
     Timer->stop();
     QObject::disconnect(Timer , SIGNAL(timeout()) , this , SLOT(myTimer()));
-    stepmotor->go_emergency();
+    stepmotor_1->go_emergency();
     stepmotor_2->go_emergency();
 
-    delete stepmotor;
+    delete stepmotor_1;
     delete stepmotor_2;
+    delete thread_1;
+    delete thread_2;
     delete Timer;
 
 
@@ -120,7 +140,7 @@ void MainWindow::myTimer()    //действие по таймеру
     // отображение текущей координаты ШД
     show_current_position show, show_2;
 
-    show = stepmotor->get_current_position();
+    show = stepmotor_1->get_current_position();
     show_2 = stepmotor_2->get_current_position();
 
     show.Position_1 /= 640;
@@ -165,11 +185,11 @@ void MainWindow::on_handle_clicked()
     selected_mode = 3;
     connect(dialog,SIGNAL(close_dialog()),this,SLOT(close_dialog()));
     connect(dialog,SIGNAL(make_shoot(uchar,uchar,int)),this,SLOT(make_shoot(uchar,uchar,int)));
-    connect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor,SLOT(manual_movement(Axes_Mask,int)));
-    connect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor,SLOT(stop_movement(Axes_Mask)));
+    connect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor_1,SLOT(manual_movement(Axes_Mask,int)));
+    connect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor_1,SLOT(stop_movement(Axes_Mask)));
     connect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
     connect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
-    connect(dialog,SIGNAL(go(int,Axes_Mask)),stepmotor,SLOT(go_to(int,Axes_Mask)));
+    connect(dialog,SIGNAL(go(int,Axes_Mask)),stepmotor_1,SLOT(go_to(int,Axes_Mask)));
     connect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
 
     if(!ui->xray_signal->isChecked())
@@ -202,11 +222,11 @@ void MainWindow::close_dialog()
     disconnect(dialog,SIGNAL(make_shoot(uchar,uchar,int)),this,SLOT(make_shoot(uchar,uchar,int)));
     disconnect(reciever, SIGNAL(GetDataComplete(ushort*)),dialog,SLOT(set_image(ushort*)));
     disconnect(dialog,SIGNAL(close_dialog()),this,SLOT(close_dialog()));
-    disconnect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor,SLOT(manual_movement(Axes_Mask,int)));
-    disconnect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor,SLOT(stop_movement(Axes_Mask)));
+    disconnect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor_1,SLOT(manual_movement(Axes_Mask,int)));
+    disconnect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor_1,SLOT(stop_movement(Axes_Mask)));
     disconnect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
     disconnect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
-    disconnect(dialog,SIGNAL(go(int,Axes_Mask)),stepmotor,SLOT(go_to(int,Axes_Mask)));
+    disconnect(dialog,SIGNAL(go(int,Axes_Mask)),stepmotor_1,SLOT(go_to(int,Axes_Mask)));
     disconnect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
     disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
     disconnect(reciever, SIGNAL(GetDataComplete(ushort*)),dialog,SLOT(set_image(ushort*)));
@@ -254,8 +274,8 @@ void MainWindow::on_Start_AutoScan_clicked()
             connect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
         }
         connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
-        connect(this, SIGNAL(nextStep(int,int)), stepmotor, SLOT(calculate_go(int,int)));
-        connect(stepmotor, SIGNAL(continue_move()), reciever, SLOT(AcquireImage()));
+        connect(this, SIGNAL(nextStep(int,int)), stepmotor_1, SLOT(calculate_go(int,int)));
+        connect(stepmotor_1, SIGNAL(continue_move()), reciever, SLOT(AcquireImage()));
         connect(this, SIGNAL(finishAutoScan()), this, SLOT(finish_autoscan()));
         connect(this,SIGNAL(retry_acquire_image()),reciever,SLOT(AcquireImage()));
 
@@ -304,8 +324,8 @@ void MainWindow::finish_autoscan()
     disconnect(rap,SIGNAL(changeI(uint)),this,SLOT(onChangeI(uint)));
     disconnect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
     disconnect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
-    disconnect(this, SIGNAL(nextStep(int,int)), stepmotor, SLOT(calculate_go(int,int)));
-    disconnect(stepmotor, SIGNAL(continue_move()), reciever, SLOT(AcquireImage()));
+    disconnect(this, SIGNAL(nextStep(int,int)), stepmotor_1, SLOT(calculate_go(int,int)));
+    disconnect(stepmotor_1, SIGNAL(continue_move()), reciever, SLOT(AcquireImage()));
     disconnect(this, SIGNAL(finishAutoScan()), rap, SLOT(off()));
     disconnect(this,SIGNAL(retry_acquire_image()),reciever,SLOT(AcquireImage()));
 
@@ -398,10 +418,9 @@ void MainWindow::onGetData(ushort * tdata)
             if (!needRenew)
             {
                 // сохранение среднего значения пиксела на снимке
-                QString txt = QString("Average%1").arg(CountOfShoot);
-                settingtxt->setValue(txt,avpixel);
-                //settingtxt->setValue("avpixel" , avpixel);
-                //settingtxt->setValue(txt, AccumulationTime);
+                QString txt = QString("Image%1").arg(CountOfShoot);
+                QString value = QString("Average = %1 Accumulation time = %2").arg(avpixel);
+                settingtxt->setValue(txt,value);
                 settingtxt->sync();
 
                 // сохранение изображений в raw-формате
@@ -909,10 +928,10 @@ void MainWindow::on_Calibrate_clicked()
     AxeOfCalb_1 = 1;
     AxeOfCalb_2 = 1;
     AxeOfCalb_3 = 0;
-    stepmotor->setCalibrAxe(AxeOfCalb_1 , AxeOfCalb_2 , AxeOfCalb_3);
+    stepmotor_1->setCalibrAxe(AxeOfCalb_1 , AxeOfCalb_2 , AxeOfCalb_3);
     AxeOfCalb_3 = 1;
     stepmotor_2->setCalibrAxe(AxeOfCalb_1 , AxeOfCalb_2 , AxeOfCalb_3);
-    stepmotor->calibrate();
+    stepmotor_1->calibrate();
     stepmotor_2->calibrate();
 }
 
