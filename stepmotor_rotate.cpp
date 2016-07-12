@@ -884,6 +884,20 @@ Axes_Mask stepmotor_rotate::reset_axes_mask()
     return axes;
 }
 
+void stepmotor_rotate::setRunning(bool running)
+{
+    if (m_running == running)
+        return;
+
+    m_running = running;
+    emit runningChanged(running);
+}
+
+bool stepmotor_rotate::running() const
+{
+    return m_running;
+}
+
 stepmotor_rotate::~stepmotor_rotate()
 {
     QObject::disconnect(PacketTimer, SIGNAL(timeout()), this, SLOT(myPacketTimer()));

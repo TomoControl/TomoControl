@@ -106,8 +106,8 @@ MainWindow::~MainWindow()
     setting->setValue("State_checkbox" , ui->with_rotate->isChecked());
     setting->sync();
 
-    stepmotor_1.setRunning(true);
-    stepmotor_2.setRunning(true);
+    stepmotor_1.setRunning(false);
+    stepmotor_2.setRunning(false);
 
     // отключение и осовобождение памяти для драйверов ШД
     Timer->stop();
@@ -1029,7 +1029,7 @@ void MainWindow::SetUIData()
     ui->Compare->setText(setting->value("IntensiveCorrection").toString());
     ui->TimeCorrect->setText(setting->value("TimeCorrect").toString());
     ui->Exposure->setText(setting->value("Exposure").toString());
-    ui->with_rotate->setChecked(setting->value("State_checkbox").toBool(); // to test
+    ui->with_rotate->setChecked(setting->value("State_checkbox").toBool()); // to test
     ui->comboBox_2->setDisabled(true);
     ui->Start_AutoScan->setDisabled(false);
     ui->handle->setDisabled(false);
