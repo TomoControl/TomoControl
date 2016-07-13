@@ -143,7 +143,7 @@ MainWindow::~MainWindow()
 
 
     // отключение и осовобождение памяти для приемника РИ
-    if(ui->comboBox_2->currentIndex() <= 1)               // TODO: Изменить, если появятся еще приемники
+    if(ui->comboBox_2->currentIndex() <= 2)               // TODO: Изменить, если появятся еще приемники
     delete reciever;
 
     // отключение и осовобождение памяти для источника РИ
@@ -921,7 +921,7 @@ void MainWindow::on_NumberOfSteps_textChanged(const QString &arg1)
     (QString)waste = arg1;
     if ((ui->NumberOfSteps->text().toInt() == 1 && ui->with_rotate->isChecked()) ||
         (ui->NumberOfSteps->text().toInt() != 1 && !ui->with_rotate->isChecked()) ||
-         ui->NumberOfSteps->text().toInt() < 1 || ui->comboBox_2->currentIndex() > 1)
+         ui->NumberOfSteps->text().toInt() < 1 || ui->comboBox_2->currentIndex() > 2)
         ui->Start_AutoScan->setDisabled(true);
     else
         ui->Start_AutoScan->setDisabled(false);
@@ -933,7 +933,7 @@ void MainWindow::on_with_rotate_stateChanged(int arg1)
     waste = arg1;
     if ((ui->NumberOfSteps->text().toInt() == 1 && ui->with_rotate->isChecked()) ||
         (ui->NumberOfSteps->text().toInt() != 1 && !ui->with_rotate->isChecked()) ||
-         ui->NumberOfSteps->text().toInt() < 1 || ui->comboBox_2->currentIndex() > 1)
+         ui->NumberOfSteps->text().toInt() < 1 || ui->comboBox_2->currentIndex() > 2)
         ui->Start_AutoScan->setDisabled(true);
     else
         ui->Start_AutoScan->setDisabled(false);
@@ -1034,6 +1034,11 @@ void MainWindow::on_comboBox_2_currentIndexChanged(int index)
         darkData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
         //selected_cam = 2;
         break;
+    case 2:
+        qDebug() << "text2" << ui->comboBox_2->currentText();
+        reciever = ViVIXCam::getInstance();
+        reciever->InitializationCam();
+
     default:
         break;
     }
@@ -1071,6 +1076,8 @@ void MainWindow::MakeConfig()
         PixelSize = 189;
     if (ui->comboBox_2->currentIndex() == 1)
         PixelSize = 50;
+    if (ui->comboBox_2->currentIndex() == 2)
+        PixelSize = 200;
 
     float ScaledPixelSize = (float)ObjectToSource*(float)PixelSize/(float)CameraToSource;
     qDebug() << ScaledPixelSize;

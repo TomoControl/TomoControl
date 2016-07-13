@@ -27,7 +27,8 @@ SOURCES += main.cpp\
     plcm.cpp \
     mltcam.cpp \
     cam.cpp \
-    service_functions.cpp
+    service_functions.cpp \
+    vivixcam.cpp
 
 
 HEADERS  += mainwindow.h \
@@ -46,7 +47,8 @@ HEADERS  += mainwindow.h \
     plcm.h \
     mltcam.h \
     cam.h \
-    service_functions.h
+    service_functions.h \
+    vivixcam.h
 
 
 FORMS    += mainwindow.ui \

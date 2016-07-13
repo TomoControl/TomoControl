@@ -16,6 +16,7 @@ public slots:
     virtual void AcquireImage()=0;
     virtual void SetAccumulationTime(int time)=0;
     virtual void Disconnect()=0;
+    virtual void InitializationCam()=0;
 
 private slots:
     virtual void WaitForExecution()=0;

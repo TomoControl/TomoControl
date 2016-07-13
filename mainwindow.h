@@ -23,6 +23,7 @@
 #include "dialog.h"
 #include "plcmwidget.h"
 #include "mltcam.h"
+#include "vivixcam.h"
 #include "cam.h"
 #include "service_functions.h"
 
