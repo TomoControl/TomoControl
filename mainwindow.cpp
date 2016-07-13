@@ -18,6 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
     difference = 0;
     step_size = 5000;
     cent_2 = 0;
+	
 
     QImage image(IMAGE_WIDTH, IMAGE_HEIGHT, QImage::Format_Indexed8);
     rxImage = image;
