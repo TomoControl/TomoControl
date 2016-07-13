@@ -24,7 +24,7 @@ class AlphaCam : public cam
 public:
      AlphaCam();
     ~AlphaCam();
-
+    void InitializationCam();
     void mySleep (uint msec);
 
     int size_of_step;

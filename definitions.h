@@ -5,12 +5,17 @@
 //#define IMAGE_WIDTH 3072
 //#define IMAGE_HEIGHT 2368
 
-#define IMAGE_WIDTH 1536
-#define IMAGE_HEIGHT 1184
+//#define IMAGE_WIDTH 1536
+//#define IMAGE_HEIGHT 1184
 
 // mltcam
 //#define IMAGE_WIDTH 2304
 //#define IMAGE_HEIGHT 2944
+
+// ViVIX
+#define IMAGE_WIDTH 2560
+#define IMAGE_HEIGHT 3072
+
 
 #define BUFFER_COUNT ( 1 )
 

@@ -37,6 +37,11 @@ AlphaCam::AlphaCam()
     Counter = 0;
 }
 
+void AlphaCam::InitializationCam()
+{
+
+}
+
 AlphaCam::~AlphaCam()
 {
 

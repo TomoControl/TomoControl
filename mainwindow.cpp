@@ -70,8 +70,8 @@ MainWindow::MainWindow(QWidget *parent) :
     stepmotor_1->setRunning(true);
     stepmotor_2->setRunning(true);
 
-    thread_1->start();
-    thread_2->start();
+    thread_1->start(QThread::TimeCriticalPriority);
+    thread_2->start(QThread::TimeCriticalPriority);
 
     Source = ("192.168.10.1");//QHostAddress::LocalHost;
     SourcePort = 1075;
@@ -144,7 +144,10 @@ MainWindow::~MainWindow()
 
     // отключение и осовобождение памяти для приемника РИ
     if(ui->comboBox_2->currentIndex() <= 2)               // TODO: Изменить, если появятся еще приемники
-    delete reciever;
+    {
+        reciever->Disconnect();
+        delete reciever;
+    }
 
     // отключение и осовобождение памяти для источника РИ
     rap->ClosePort();
@@ -263,7 +266,7 @@ void MainWindow::on_Start_AutoScan_clicked()
 {
     if(!status)
     {
-        FileDirectory = QString("AutoScan/%1/%2").arg(QDate::currentDate().toString("yyyy-MM-dd"))
+        FileDirectory = QString("AutoScan/%1/%2/").arg(QDate::currentDate().toString("yyyy-MM-dd"))
                                                  .arg(QTime::currentTime().toString("hh-mm-ss"));
 
         selected_mode = 1;
@@ -1019,7 +1022,7 @@ void MainWindow::on_pushButton_4_clicked()
 
 void MainWindow::on_comboBox_2_currentIndexChanged(int index)
 {
-    ui->comboBox_2->removeItem(2);
+    ui->comboBox_2->removeItem(3);
     ui->comboBox_2->repaint();
     switch (index)
     {

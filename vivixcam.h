@@ -14,12 +14,13 @@
 
 #include "ViVIX_SDK.h"
 
+#include "cam.h"
+#include "definitions.h"
+
+
 using namespace Vieworks::vivix;
 
-#define IMAGE_WIDTH 2560
-#define IMAGE_HEIGHT 3072
-
-class ViVIXCam : public QObject
+class ViVIXCam : public cam
 {
     Q_OBJECT
 public:
@@ -31,6 +32,8 @@ public:
 
     CVivixSDK * m_SDK;
     detector::CDetector* pDetector;
+
+    ushort * data;
 
     HANDLE m_hNotifyFrameGrabberNormalImageInStart;
     HANDLE m_hNotifyFrameGrabberNormalImageIn;
@@ -50,13 +53,14 @@ signals:
     void GetDataComplete(ushort *);
 
 protected:
-    ViVIXCam(QObject *parent = 0);
+    ViVIXCam();
 
 private:
     void emitSignal(ushort *);
     static ViVIXCam* m_instance;
 
 public slots:
+
     void AcquireImage();
     void SetAccumulationTime(int time);
 

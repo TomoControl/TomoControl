@@ -61,4 +61,5 @@ RESOURCES += \
 INCLUDEPATH += $$quote(C:/Program Files (x86)/Pleora Technologies Inc/eBUS SDK/Includes)
 LIBS += -L$$quote(C:/Program Files (x86)/Pleora Technologies Inc/eBUS SDK/Libraries)
 
-
+INCLUDEPATH += C:/vivix/
+LIBS += -lC:/vivix/ViVIX_SDK

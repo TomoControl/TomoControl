@@ -2,8 +2,10 @@
 
 ViVIXCam* ViVIXCam::m_instance = 0;
 
-ViVIXCam::ViVIXCam(QObject *parent) : QObject(parent)
+ViVIXCam::ViVIXCam()
 {
+
+    data = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
 
     m_SDK = new CVivixSDK;
 
@@ -37,7 +39,9 @@ ViVIXCam* ViVIXCam::getInstance()
     return m_instance;
 }
 
-void ViVIXCam::emitSignal(ushort * data){
+void ViVIXCam::emitSignal(ushort * tData)
+{
+   memcpy(data, tData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
    emit GetDataComplete(data);
 }
 
@@ -244,6 +248,7 @@ void ViVIXCam::NotifyFrameGrabberImageIn(Vieworks::vivix::DETECTOR_ID id, Viewor
 //            }
 //            file.write((char*)dData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
 //            delete[] dData;
+
 
             getInstance()->emitSignal((ushort *) image->Image);
         }
