@@ -1,6 +1,8 @@
 ﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+Q_DECLARE_METATYPE(QHostAddress)
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -28,7 +30,6 @@ MainWindow::MainWindow(QWidget *parent) :
 
     dialog = new Dialog;
     plcmwi = new plcmwidget;
-    service = new service_functions;
 
     // создание поля для изображения
     frame = new myFrame;
@@ -40,18 +41,49 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->graphicsView->setScene(graphicsScene);
 
     // инициализация драйверов ШД
-    stepmotor = new stepmotor_rotate;
-    //stepmotor_2 = new stepmotor_rotate;
-    Source = ("192.168.10.1");
+    stepmotor_1 = new stepmotor_rotate;
+    stepmotor_2 = new stepmotor_rotate;
+
+    // threads
+    thread_1 = new QThread;
+    thread_2 = new QThread;
+
+    qRegisterMetaType <QHostAddress> ("QHostAddress");
+    qRegisterMetaType <Axes_Mask> ("Axes_Mask");
+
+    connect(stepmotor_1, SIGNAL(finished()), thread_1, SLOT(terminate()));
+    connect(stepmotor_2, SIGNAL(finished()), thread_2, SLOT(terminate()));
+    connect(this,
+            SIGNAL(init_stepmotor1(QHostAddress,QHostAddress,uint,uint,uchar)),
+            stepmotor_1,
+            SLOT(initialization(QHostAddress,QHostAddress,uint,uint,uchar)));
+    connect(this,
+            SIGNAL(init_stepmotor2(QHostAddress,QHostAddress,uint,uint,uchar)),
+            stepmotor_2,
+            SLOT(initialization(QHostAddress,QHostAddress,uint,uint,uchar)));
+
+
+    stepmotor_1->moveToThread(thread_1);
+    stepmotor_2->moveToThread(thread_2);
+
+    stepmotor_1->setRunning(true);
+    stepmotor_2->setRunning(true);
+
+    thread_1->start();
+    thread_2->start();
+
+    Source = ("192.168.10.1");//QHostAddress::LocalHost;
     SourcePort = 1075;
-    Destination = ("192.168.10.10");
+    Destination = ("192.168.10.10");//QHostAddress::LocalHost;
     DestinationPort = 5000;
     uchar ControlNum;
     ControlNum = 1;
-    stepmotor->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
+    emit init_stepmotor1(Source, Destination, SourcePort, DestinationPort, ControlNum);
+    //stepmotor_1->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
     SourcePort = 1234;
-    Destination = ("192.168.10.11");
+    Destination = ("192.168.10.11");//QHostAddress::LocalHost;
     ControlNum = 2;
+    emit init_stepmotor2(Source, Destination, SourcePort, DestinationPort, ControlNum);
     //stepmotor_2->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
 
     Timer = new QTimer;
@@ -89,16 +121,23 @@ MainWindow::~MainWindow()
     setting->setValue("Exposure" , ui->Exposure->text().toInt());
     setting->setValue("IntensiveCorrection" , ui->Compare->text().toInt());
     setting->setValue("TimeCorrect" , ui->TimeCorrect->text().toInt());
+    setting->setValue("State_checkbox" , ui->with_rotate->isChecked());
     setting->sync();
+
+    stepmotor_1->setRunning(false);
+    stepmotor_2->setRunning(false);
 
     // отключение и осовобождение памяти для драйверов ШД
     Timer->stop();
     QObject::disconnect(Timer , SIGNAL(timeout()) , this , SLOT(myTimer()));
-    stepmotor->go_emergency();
-    //stepmotor_2->go_emergency();
+    stepmotor_1->go_emergency();
+    stepmotor_2->go_emergency();
 
-    delete stepmotor;
-    //delete stepmotor_2;
+    delete stepmotor_1;
+    delete stepmotor_2;
+
+    delete thread_1;
+    delete thread_2;
     delete Timer;
 
 
@@ -120,26 +159,25 @@ void MainWindow::myTimer()    //действие по таймеру
     // отображение текущей координаты ШД
     show_current_position show, show_2;
 
-    show = stepmotor->get_current_position();
-    //show_2 = stepmotor_2->get_current_position();
-   // show_2.Position_1 = show_2.Position_3;
+    show = stepmotor_1->get_current_position();
+    show_2 = stepmotor_2->get_current_position();
 
-//    show.Position_1 /= 40;
-//    show.Position_2 /= 40;
-//    show.Position_3 /= 40;
+    show.Position_1 /= 640;
+    show.Position_2 /= 640;
+    show.Position_3 /= 640;
 
-//    show_2.Position_1 /= 40;
-//    show_2.Position_2 /= 40;
-//    show_2.Position_3 /= 40;
+    show_2.Position_1 /= 640;
+    show_2.Position_2 /= 640;
+    show_2.Position_3 /= 640;
 
 
     ui->pos1->setText(QString::number(show.Position_1));
     ui->pos2->setText(QString::number(show.Position_2));
     ui->pos3->setText(QString::number(show.Position_3));
 
-    //ui->pos4->setText(QString::number(show_2.Position_1));
-    //ui->pos5->setText(QString::number(show_2.Position_2));
-    //ui->pos6->setText(QString::number(show_2.Position_3));
+    ui->pos4->setText(QString::number(show_2.Position_1));
+    ui->pos5->setText(QString::number(show_2.Position_2));
+    ui->pos6->setText(QString::number(show_2.Position_3));
 
     // отображение текущего шага сканирования
     ui->current_step->setText(QString::number(CountOfShoot));
@@ -166,12 +204,12 @@ void MainWindow::on_handle_clicked()
     selected_mode = 3;
     connect(dialog,SIGNAL(close_dialog()),this,SLOT(close_dialog()));
     connect(dialog,SIGNAL(make_shoot(uchar,uchar,int)),this,SLOT(make_shoot(uchar,uchar,int)));
-    connect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor,SLOT(manual_movement(Axes_Mask,int)));
-    connect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor,SLOT(stop_movement(Axes_Mask)));
-    //connect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
-   // connect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
-    connect(dialog,SIGNAL(go(int,Axes_Mask)),stepmotor,SLOT(go_to(int,Axes_Mask)));
-    //connect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
+    connect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor_1,SLOT(manual_movement(Axes_Mask,int)));
+    connect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor_1,SLOT(stop_movement(Axes_Mask)));
+    connect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
+    connect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
+    connect(dialog,SIGNAL(go(int,Axes_Mask)),stepmotor_1,SLOT(go_to(int,Axes_Mask)));
+    connect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
 
     if(!ui->xray_signal->isChecked())
     {
@@ -203,12 +241,12 @@ void MainWindow::close_dialog()
     disconnect(dialog,SIGNAL(make_shoot(uchar,uchar,int)),this,SLOT(make_shoot(uchar,uchar,int)));
     disconnect(reciever, SIGNAL(GetDataComplete(ushort*)),dialog,SLOT(set_image(ushort*)));
     disconnect(dialog,SIGNAL(close_dialog()),this,SLOT(close_dialog()));
-    disconnect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor,SLOT(manual_movement(Axes_Mask,int)));
-    disconnect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor,SLOT(stop_movement(Axes_Mask)));
-    //disconnect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
-    //disconnect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
-    disconnect(dialog,SIGNAL(go(int,Axes_Mask)),stepmotor,SLOT(go_to(int,Axes_Mask)));
-    //disconnect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
+    disconnect(dialog,SIGNAL(move(Axes_Mask,int)),stepmotor_1,SLOT(manual_movement(Axes_Mask,int)));
+    disconnect(dialog,SIGNAL(stop(Axes_Mask)),stepmotor_1,SLOT(stop_movement(Axes_Mask)));
+    disconnect(dialog,SIGNAL(move_2(Axes_Mask,int)),stepmotor_2,SLOT(manual_movement(Axes_Mask,int)));
+    disconnect(dialog,SIGNAL(stop_2(Axes_Mask)),stepmotor_2,SLOT(stop_movement(Axes_Mask)));
+    disconnect(dialog,SIGNAL(go(int,Axes_Mask)),stepmotor_1,SLOT(go_to(int,Axes_Mask)));
+    disconnect(dialog,SIGNAL(go_2(int,Axes_Mask)),stepmotor_2,SLOT(go_to(int,Axes_Mask)));
     disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
     disconnect(reciever, SIGNAL(GetDataComplete(ushort*)),dialog,SLOT(set_image(ushort*)));
     disconnect(dialog,SIGNAL(rap_off()),rap,SLOT(off()));
@@ -255,8 +293,8 @@ void MainWindow::on_Start_AutoScan_clicked()
             connect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
         }
         connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
-        connect(this, SIGNAL(nextStep(int,int)), stepmotor, SLOT(calculate_go(int,int)));
-        connect(stepmotor, SIGNAL(continue_move()), reciever, SLOT(AcquireImage()));
+        connect(this, SIGNAL(nextStep(int,int)), stepmotor_1, SLOT(calculate_go(int,int)));
+        connect(stepmotor_1, SIGNAL(continue_move()), reciever, SLOT(AcquireImage()));
         connect(this, SIGNAL(finishAutoScan()), this, SLOT(finish_autoscan()));
         connect(this,SIGNAL(retry_acquire_image()),reciever,SLOT(AcquireImage()));
 
@@ -305,8 +343,8 @@ void MainWindow::finish_autoscan()
     disconnect(rap,SIGNAL(changeI(uint)),this,SLOT(onChangeI(uint)));
     disconnect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
     disconnect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
-    disconnect(this, SIGNAL(nextStep(int,int)), stepmotor, SLOT(calculate_go(int,int)));
-    disconnect(stepmotor, SIGNAL(continue_move()), reciever, SLOT(AcquireImage()));
+    disconnect(this, SIGNAL(nextStep(int,int)), stepmotor_1, SLOT(calculate_go(int,int)));
+    disconnect(stepmotor_1, SIGNAL(continue_move()), reciever, SLOT(AcquireImage()));
     disconnect(this, SIGNAL(finishAutoScan()), rap, SLOT(off()));
     disconnect(this,SIGNAL(retry_acquire_image()),reciever,SLOT(AcquireImage()));
 
@@ -399,15 +437,14 @@ void MainWindow::onGetData(ushort * tdata)
             if (!needRenew)
             {
                 // сохранение среднего значения пиксела на снимке
-                QString txt = QString("Average%1").arg(CountOfShoot);
-                settingtxt->setValue(txt,avpixel);
-                //settingtxt->setValue("avpixel" , avpixel);
-                //settingtxt->setValue(txt, AccumulationTime);
+                QString txt = QString("Image%1").arg(CountOfShoot);
+                QString value = QString("Average = %1 Accumulation time = %2").arg(avpixel);
+                settingtxt->setValue(txt,value);
                 settingtxt->sync();
 
                 // сохранение изображений в raw-формате
                 QString NameForSaveImage;
-                NameForSaveImage = service->RenameOfImages(CountOfShoot);
+                NameForSaveImage = service_functions::RenameOfImages(CountOfShoot);
                 QFile file(FileDirectory + NameForSaveImage);
                 if (!file.open(QIODevice::WriteOnly))
                 {
@@ -486,10 +523,10 @@ void MainWindow::onGetData(ushort * tdata)
                 qDebug() << "calb step = 1";
                 int step;
                 Axes_Mask axes;
-                //axes = stepmotor_2->reset_axes_mask();
+                axes = stepmotor_2->reset_axes_mask();
                 axes.a4 = 1;
                 step = 10000;
-                //stepmotor_2->go_to_for_calb(step,axes);
+                stepmotor_2->go_to_for_calb(step,axes);
                 break;
             }
             case 2:
@@ -497,19 +534,19 @@ void MainWindow::onGetData(ushort * tdata)
                 qDebug() << "calb step = 2";
                 int step;
                 Axes_Mask axes;
-                //axes = stepmotor_2->reset_axes_mask();
+                axes = stepmotor_2->reset_axes_mask();
                 axes.a1 = 1;
 
                 if(difference > 5 )
                 {step = ~step_size; qDebug() << difference << "difference";}
                 if(difference < -5 ) {step = step_size;qDebug() << difference << "difference_22222";}
-                //stepmotor_2->go_to_for_calb(step,axes);
+                stepmotor_2->go_to_for_calb(step,axes);
 
                 // возвращение на первую линию
                 step = ~10000;
-                //axes = stepmotor_2->reset_axes_mask();
+                axes = stepmotor_2->reset_axes_mask();
                 axes.a4 = 1;
-                //stepmotor_2->go_to(step,axes);
+                stepmotor_2->go_to(step,axes);
                 calb_step = 0;
                 break;
             }
@@ -633,7 +670,8 @@ void MainWindow::convertToTiff()
     ushort * brCalData;
     dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
     brCalData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
-    QSettings *setting_2 = new QSettings (  FileDirectory , QSettings::IniFormat ); // &\? directory of .ini
+    QString File = QFileDialog::getOpenFileName(0,"Выбор файла", "", "ShootingMode.ini");
+    QSettings *setting_2 = new QSettings (  File , QSettings::IniFormat ); // &\? directory of .ini
     CountOfImage = setting_2->value("NumberOfImage" , 0).toInt();
     qDebug() << "Конвертирование:: Число изображений для конвертации:" << CountOfImage;
     int min = 62341;
@@ -909,11 +947,11 @@ void MainWindow::on_Calibrate_clicked()
     AxeOfCalb_1 = 1;
     AxeOfCalb_2 = 1;
     AxeOfCalb_3 = 0;
-    stepmotor->setCalibrAxe(AxeOfCalb_1 , AxeOfCalb_2 , AxeOfCalb_3);
+    stepmotor_1->setCalibrAxe(AxeOfCalb_1 , AxeOfCalb_2 , AxeOfCalb_3);
     AxeOfCalb_3 = 1;
-    //stepmotor_2->setCalibrAxe(AxeOfCalb_1 , AxeOfCalb_2 , AxeOfCalb_3);
-    stepmotor->calibrate();
-    //stepmotor_2->calibrate();
+    stepmotor_2->setCalibrAxe(AxeOfCalb_1 , AxeOfCalb_2 , AxeOfCalb_3);
+    stepmotor_1->calibrate();
+    stepmotor_2->calibrate();
 }
 
 
@@ -924,7 +962,7 @@ void MainWindow::source_calibration()
         // установление соединений для автосканирования
         connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
         connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
-        //connect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
+        connect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
         connect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
         selected_mode  = 2;
         status = 1;
@@ -953,7 +991,7 @@ void MainWindow::finish_calibration()
     rap->off();
     disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
     disconnect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
-    //disconnect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
+    disconnect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
     disconnect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
 
     // выключение источника, сброс индикации
@@ -1010,6 +1048,7 @@ void MainWindow::SetUIData()
     ui->Compare->setText(setting->value("IntensiveCorrection").toString());
     ui->TimeCorrect->setText(setting->value("TimeCorrect").toString());
     ui->Exposure->setText(setting->value("Exposure").toString());
+    ui->with_rotate->setChecked(setting->value("State_checkbox").toBool()); // to test
     ui->comboBox_2->setDisabled(true);
     ui->Start_AutoScan->setDisabled(false);
     ui->handle->setDisabled(false);
@@ -1020,8 +1059,6 @@ void MainWindow::SetUIData()
     ui->U_Auto->setDisabled(false);
     ui->NumberOfSteps->setDisabled(false);
 }
-
-
 
 void MainWindow::MakeConfig()
 {
@@ -1081,5 +1118,5 @@ void MainWindow::MakeConfig()
 
     setting->sync();
 
-    service->deletespace(FileDirectory + "s_.log");
+    service_functions::deletespace(FileDirectory + "s_.log");
 }

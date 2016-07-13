@@ -258,9 +258,6 @@ struct show_current_position
     int Position_1;
     int Position_2;
     int Position_3;
-    int Position_4;
-    int Position_5;
-    int Position_6;
 };
 
 
