@@ -1,6 +1,8 @@
 ﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+Q_DECLARE_METATYPE(QHostAddress)
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -46,27 +48,43 @@ MainWindow::MainWindow(QWidget *parent) :
     thread_1 = new QThread;
     thread_2 = new QThread;
 
+    qRegisterMetaType <QHostAddress> ("QHostAddress");
+    qRegisterMetaType <Axes_Mask> ("Axes_Mask");
+
     connect(stepmotor_1, SIGNAL(finished()), thread_1, SLOT(terminate()));
     connect(stepmotor_2, SIGNAL(finished()), thread_2, SLOT(terminate()));
+    connect(this,
+            SIGNAL(init_stepmotor1(QHostAddress,QHostAddress,uint,uint,uchar)),
+            stepmotor_1,
+            SLOT(initialization(QHostAddress,QHostAddress,uint,uint,uchar)));
+    connect(this,
+            SIGNAL(init_stepmotor2(QHostAddress,QHostAddress,uint,uint,uchar)),
+            stepmotor_2,
+            SLOT(initialization(QHostAddress,QHostAddress,uint,uint,uchar)));
+
+
     stepmotor_1->moveToThread(thread_1);
     stepmotor_2->moveToThread(thread_2);
 
     stepmotor_1->setRunning(true);
     stepmotor_2->setRunning(true);
-    thread_1.start();
-    thread_2.start();
 
-    Source = ("192.168.10.1");
+    thread_1->start();
+    thread_2->start();
+
+    Source = ("192.168.10.1");//QHostAddress::LocalHost;
     SourcePort = 1075;
-    Destination = ("192.168.10.10");
+    Destination = ("192.168.10.10");//QHostAddress::LocalHost;
     DestinationPort = 5000;
     uchar ControlNum;
     ControlNum = 1;
-    stepmotor_1->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
+    emit init_stepmotor1(Source, Destination, SourcePort, DestinationPort, ControlNum);
+    //stepmotor_1->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
     SourcePort = 1234;
-    Destination = ("192.168.10.11");
+    Destination = ("192.168.10.11");//QHostAddress::LocalHost;
     ControlNum = 2;
-    stepmotor_2->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
+    emit init_stepmotor2(Source, Destination, SourcePort, DestinationPort, ControlNum);
+    //stepmotor_2->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
 
     Timer = new QTimer;
     QObject::connect(Timer , SIGNAL(timeout()) , this, SLOT(myTimer()));
@@ -106,8 +124,8 @@ MainWindow::~MainWindow()
     setting->setValue("State_checkbox" , ui->with_rotate->isChecked());
     setting->sync();
 
-    stepmotor_1.setRunning(false);
-    stepmotor_2.setRunning(false);
+    stepmotor_1->setRunning(false);
+    stepmotor_2->setRunning(false);
 
     // отключение и осовобождение памяти для драйверов ШД
     Timer->stop();
@@ -117,6 +135,7 @@ MainWindow::~MainWindow()
 
     delete stepmotor_1;
     delete stepmotor_2;
+
     delete thread_1;
     delete thread_2;
     delete Timer;

@@ -87,6 +87,12 @@ signals:
     void rap_off();
     void move_on(int, Axes_Mask);
     void finish();
+    void init_stepmotor1(QHostAddress Source,
+                         QHostAddress Destination,
+                         uint SourcePort,
+                         uint DestinationPort,
+                         uchar ControlNum);
+    void init_stepmotor2(QHostAddress Source, QHostAddress Destination, uint SourcePort, uint DestinationPort, uchar ControlNum);
 
 public slots:
 

@@ -232,7 +232,7 @@ show_current_position stepmotor_rotate::get_current_position()
     pos.Position_1 = Position[2];
     pos.Position_2 = Position[1];
     pos.Position_3 = Position[0];
-    return positiont;
+    return pos;
 }
 
 
@@ -901,7 +901,7 @@ bool stepmotor_rotate::running() const
 stepmotor_rotate::~stepmotor_rotate()
 {
     QObject::disconnect(PacketTimer, SIGNAL(timeout()), this, SLOT(myPacketTimer()));
-    delete PacketTimer;
+    //delete PacketTimer;    // TODO: We need to resolve this problem
     emit finished();
 }
 

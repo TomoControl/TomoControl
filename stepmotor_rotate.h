@@ -25,7 +25,7 @@ public:
     char get_error();
     char get_job();
     limits_position get_limits();
-    void initialization(QHostAddress Source, QHostAddress Destination, uint SourcePort, uint DestinationPort, uchar ControlNum);
+
     void go_emergency();
 
     void set_start_position(); // установка тек. координат
@@ -77,6 +77,7 @@ public slots:
     void go_to_for_calb(int step, Axes_Mask axes);
     Axes_Mask reset_axes_mask();
     void setRunning(bool running); // thread
+    void initialization(QHostAddress Source, QHostAddress Destination, uint SourcePort, uint DestinationPort, uchar ControlNum);
 
 
 signals:
