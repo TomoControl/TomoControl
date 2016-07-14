@@ -10,7 +10,7 @@ QString service_functions::RenameOfImages(ushort Count)
     Count ++;
     QString FormatOfName;
     FormatOfName = QString("%1").arg(Count);
-    while (FormatOfName.length() <= Format_Name_Of_Image)
+    while (FormatOfName.length() <= FORMAT_NAME_OF_IMAGE)
     {
         FormatOfName = '0' + FormatOfName;
     }

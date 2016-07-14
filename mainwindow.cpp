@@ -12,13 +12,14 @@ MainWindow::MainWindow(QWidget *parent) :
     XrayStatus = 0;
     CountOfShoot = 0;
     CountOfDarkImage = 0;
+    CountOfFrame = 0;
     selected_mode = 0;
     selected_cam = 0;
     calb_step = 0;
     difference = 0;
     step_size = 5000;
     cent_2 = 0;
-	
+    enable_continue = true;
 
     QImage image(IMAGE_WIDTH, IMAGE_HEIGHT, QImage::Format_Indexed8);
     rxImage = image;
@@ -276,6 +277,8 @@ void MainWindow::on_Start_AutoScan_clicked()
         // индикация процесса выполнения набора проекций
         ui->progressBar->setRange(0,NumberOfImage);
 
+
+
         // расчет длины 1 шага при перемещении объекта
         if ((FULL_TURN % NumberOfImage) == 0)
         {
@@ -308,6 +311,14 @@ void MainWindow::on_Start_AutoScan_clicked()
 
         // установка времени экспозиции камеры
         AccumulationTime = ui->Exposure->text().toInt();
+
+        // определение необходимости раскадровки снимков
+        if(ui->any_image->isChecked())
+        {
+            enable_continue = false;
+            AccumulationTime /= NUMBER_OF_FRAME;
+        }
+
         reciever->SetAccumulationTime(AccumulationTime);
 
         if ((ui->comboBox_2->currentIndex() == 1)&&(NUMBER_OF_DARK_IMAGE > 0))
@@ -372,7 +383,7 @@ void MainWindow::onGetData(ushort * tdata)
         {
         case 1:
         {
-            if (CountOfShoot == 0)
+            if ((CountOfShoot == 0) && (CountOfFrame == 0))
             {
                 qDebug() << "mainwindow :: create ini";
 
@@ -385,7 +396,37 @@ void MainWindow::onGetData(ushort * tdata)
                 setting->setValue("StartTime" , Time_start);
                 setting->sync();
                 MakeConfig(); // конфигурационный файл для восстановления проекций
-                settingtxt = new QSettings ( FileDirectory + "txt.ini" , QSettings::IniFormat);
+                settingtxt = new QSettings ( FileDirectory + "txt.ini" , QSettings::IniFormat);  
+            }
+
+            if((ui->any_image->isChecked()) && (CountOfFrame == 0))
+            {
+                frameData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
+            }
+
+            // реализация заданного числа кадров в снимке
+            if(!enable_continue)
+            {
+                for (int k = 0; k < IMAGE_HEIGHT - 1; k++)
+                {
+                    for (int j = 0; j < IMAGE_WIDTH - 1; j++)
+                    {
+                        frameData[(k * IMAGE_WIDTH) + j] += dData[(k * IMAGE_WIDTH) + j];
+                    }
+                }
+
+                if( CountOfFrame == (NUMBER_OF_FRAME - 1))
+                {
+                    enable_continue = true;
+                    delete[] frameData;
+                }
+                else
+                {
+                    CountOfFrame ++;
+                    reciever->AcquireImage();
+                    delete[] dData;
+                    return;
+                }
             }
 
             int avpixel, pixel;
@@ -404,12 +445,12 @@ void MainWindow::onGetData(ushort * tdata)
             qDebug() << "avpixel = " << avpixel;
 
             int needRenew = 0;
+
             if (CountOfShoot == 0)
             {
                 avFirstImage = avpixel;
             }
             else
-            {
                 // коррекция времени экспозиции
                 if (avpixel - avFirstImage > ui->Compare->text().toInt())
                 {
@@ -438,7 +479,8 @@ void MainWindow::onGetData(ushort * tdata)
             qDebug() << "Cканирование:: Рентгеновский снимок" << CountOfShoot + 1 << "из" << NumberOfImage;
             qDebug() << "Cканирование:: Получение снимка завершено";
 
-            if (!needRenew)
+
+            if ((!needRenew))
             {
                 // сохранение среднего значения пиксела на снимке
                 QString txt = QString("Image%1").arg(CountOfShoot);
@@ -457,6 +499,7 @@ void MainWindow::onGetData(ushort * tdata)
                 file.write((char*)dData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
                 frame->setRAWImage(dData);
                 CountOfShoot++;
+                CountOfFrame = 0;
             }
 
             delete[] dData;

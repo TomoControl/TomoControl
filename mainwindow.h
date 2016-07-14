@@ -59,8 +59,8 @@ public:
     int compare , difference;
     int cent_1 , cent_2;
 
-    ushort NumberOfCoordinates , NumberOfImage , NumberOfShoot , CountOfShoot;
-    ushort * darkData;
+    ushort NumberOfCoordinates , NumberOfImage , NumberOfShoot , CountOfShoot, CountOfFrame;
+    ushort * darkData, *frameData;
 
     int SizeOfStep , CoordinateRotate , Lenght_rotate_axe;
     int AccumulationTime;
@@ -70,7 +70,7 @@ public:
 
     QImage rxImage;
 
-    bool status , XrayStatus;
+    bool status , XrayStatus, enable_continue;
 
     uchar waste;
 

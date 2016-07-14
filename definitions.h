@@ -12,14 +12,15 @@
 //#define IMAGE_WIDTH 2304
 //#define IMAGE_HEIGHT 2944
 
+#define BUFFER_COUNT ( 1 )
+
 // ViVIX
 #define IMAGE_WIDTH 2560
 #define IMAGE_HEIGHT 3072
 
+#define NUMBER_OF_FRAME 6
 
-#define BUFFER_COUNT ( 1 )
-
-#define Format_Name_Of_Image 3 // количество цифр в названии изображения
+#define FORMAT_NAME_OF_IMAGE 3 // количество цифр в названии изображения
 #define FULL_TURN 64000  // count of steps for rotation on 360 degrees
 
 #define NUMBER_OF_AXES 3
