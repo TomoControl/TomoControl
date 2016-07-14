@@ -1,6 +1,8 @@
 #ifndef DEFINITIONS
 #define DEFINITIONS
 
+#define NUMBER_OF_RECIEVER 3
+
 // alphacam
 //#define IMAGE_WIDTH 3072
 //#define IMAGE_HEIGHT 2368

@@ -59,8 +59,11 @@ public:
     int compare , difference;
     int cent_1 , cent_2;
 
+    short brCalMean;
+    float calFactor;
+
     ushort NumberOfCoordinates , NumberOfImage , NumberOfShoot , CountOfShoot, CountOfFrame;
-    ushort * darkData, *frameData;
+    ushort * darkData, *frameData, * brCalData;
 
     int SizeOfStep , CoordinateRotate , Lenght_rotate_axe;
     int AccumulationTime;
@@ -72,6 +75,7 @@ public:
 
     bool status , XrayStatus, enable_continue;
 
+    QTime start_time, finish_time;
     uchar waste;
 
 
@@ -102,6 +106,9 @@ public slots:
     void source_calibration();
     void xray();
     void finish_calibration();
+    void save_rap_working_time();
+    void set_start_time();
+    void set_finish_time();
 
 private slots:
 
@@ -109,9 +116,7 @@ private slots:
     void onChangeI(uint i);
     void onGetData(ushort * tdata);
     void on_Start_AutoScan_clicked();
-    void on_comboBox_currentIndexChanged(int index);
     void on_load_image_clicked();
-    void on_convert_image_clicked();
     void on_SaveAutoContrast_clicked();
     void on_LoadAutoContrast_clicked();
     void on_NumberOfSteps_textChanged(const QString &arg1);
@@ -122,8 +127,6 @@ private slots:
     void on_pushButton_3_clicked();
     void on_pushButton_4_clicked();
     void on_comboBox_2_currentIndexChanged(int index);
-    void convertTo8Bit();
-    void convertToTiff();
     void make_shoot(uchar , uchar , int);
     void close_dialog();
     void StartAutoScan();

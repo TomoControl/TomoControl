@@ -230,7 +230,7 @@
           <property name="geometry">
            <rect>
             <x>120</x>
-            <y>280</y>
+            <y>290</y>
             <width>51</width>
             <height>20</height>
            </rect>
@@ -243,7 +243,7 @@
           <property name="geometry">
            <rect>
             <x>20</x>
-            <y>280</y>
+            <y>290</y>
             <width>81</width>
             <height>16</height>
            </rect>
@@ -282,7 +282,7 @@
           <property name="geometry">
            <rect>
             <x>20</x>
-            <y>250</y>
+            <y>260</y>
             <width>101</width>
             <height>16</height>
            </rect>
@@ -295,7 +295,7 @@
           <property name="geometry">
            <rect>
             <x>120</x>
-            <y>250</y>
+            <y>260</y>
             <width>51</width>
             <height>20</height>
            </rect>
@@ -385,10 +385,10 @@
          <widget class="QPushButton" name="pushButton_2">
           <property name="geometry">
            <rect>
-            <x>190</x>
-            <y>240</y>
-            <width>51</width>
-            <height>41</height>
+            <x>180</x>
+            <y>260</y>
+            <width>71</width>
+            <height>31</height>
            </rect>
           </property>
           <property name="text">
@@ -432,6 +432,19 @@
           </property>
           <property name="text">
            <string>any image</string>
+          </property>
+         </widget>
+         <widget class="QCheckBox" name="brCalibration">
+          <property name="geometry">
+           <rect>
+            <x>170</x>
+            <y>240</y>
+            <width>182</width>
+            <height>17</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Calib of brigh</string>
           </property>
          </widget>
         </widget>
@@ -570,15 +583,8 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="5">
-           <widget class="QComboBox" name="comboBox"/>
-          </item>
           <item row="0" column="3">
-           <widget class="QPushButton" name="convert_image">
-            <property name="text">
-             <string>convert</string>
-            </property>
-           </widget>
+           <widget class="QComboBox" name="comboBox"/>
           </item>
           <item row="0" column="2">
            <widget class="QComboBox" name="image_format">
@@ -595,13 +601,6 @@
               <string>.jpg</string>
              </property>
             </item>
-           </widget>
-          </item>
-          <item row="0" column="4">
-           <widget class="QCheckBox" name="brCalibration">
-            <property name="text">
-             <string>Calibration of brightness</string>
-            </property>
            </widget>
           </item>
          </layout>

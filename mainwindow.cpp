@@ -24,6 +24,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QImage image(IMAGE_WIDTH, IMAGE_HEIGHT, QImage::Format_Indexed8);
     rxImage = image;
 
+    start_time = 0; finish_time = 0;
+
     // графический интерфейс
     ui->setupUi(this);
     ui->with_rotate->setChecked(true);
@@ -108,6 +110,10 @@ MainWindow::MainWindow(QWidget *parent) :
     // установление соединений
     connect(frame, SIGNAL(histCalculated(ushort*)), graphicsScene, SLOT(onHistCalculated(ushort*)));
     connect(graphicsScene, SIGNAL(changeHistOutput(int,int)), frame, SLOT(onChangeHistogrammWidget(int,int)));
+
+    // определение времени работы источника РИ
+    connect(rap,SIGNAL(xrayOn()),this,SLOT(set_start_time()));
+    connect(rap,SIGNAL(xrayOff()),this,SLOT(set_finish_time()));
 }
 
 MainWindow::~MainWindow()
@@ -144,7 +150,7 @@ MainWindow::~MainWindow()
 
 
     // отключение и осовобождение памяти для приемника РИ
-    if(ui->comboBox_2->currentIndex() <= 2)               // TODO: Изменить, если появятся еще приемники
+    if(ui->comboBox_2->currentIndex() <= (NUMBER_OF_RECIEVER - 1))
     {
         reciever->Disconnect();
         delete reciever;
@@ -167,11 +173,11 @@ void MainWindow::myTimer()    //действие по таймеру
     show = stepmotor_1->get_current_position();
     show_2 = stepmotor_2->get_current_position();
 
-    show.Position_1 /= 640;
+    show.Position_1 /= 640; // TODO корректный перевод в мм
     show.Position_2 /= 640;
     show.Position_3 /= 640;
 
-    show_2.Position_1 /= 640;
+    //show_2.Position_1 /= 640; //вращение
     show_2.Position_2 /= 640;
     show_2.Position_3 /= 640;
 
@@ -188,7 +194,7 @@ void MainWindow::myTimer()    //действие по таймеру
     ui->current_step->setText(QString::number(CountOfShoot));
 
     // отображение ошибок
-    //show_errors();
+    //show_errors(); TODO индикация ошибок
 }
 
 // отображение текущего значения напряжения на РТ
@@ -398,7 +404,28 @@ void MainWindow::onGetData(ushort * tdata)
                 setting->setValue("StartTime" , Time_start);
                 setting->sync();
                 MakeConfig(); // конфигурационный файл для восстановления проекций
-                settingtxt = new QSettings ( FileDirectory + "txt.ini" , QSettings::IniFormat);  
+                settingtxt = new QSettings ( FileDirectory + "txt.ini" , QSettings::IniFormat);
+
+                // Загружаем калибровочный файл, только если установлен флаг
+                if (ui->brCalibration->isChecked())
+                {
+                    brCalData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
+                    brCalMean = 0;
+                    calFactor = 1.0;
+
+                    QFile brCalFile(FileDirectory/*????*/ + "/brCal.raw");  // TODO где лежит калибровочный файл
+                    if (!brCalFile.open(QIODevice::ReadOnly))
+                    {
+                        qDebug() << "Конвертирование::Ошибка открытия файла";
+                    }
+                    brCalFile.read((char*)brCalData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
+
+                    // Вычисляем среднее значение по файлу
+                    brCalMean = brCalData[0];
+                    for (int i = 0; i < IMAGE_WIDTH * IMAGE_HEIGHT; i++)
+                        brCalMean = (brCalMean + brCalData[i]) / 2;
+                    qDebug() << "brCalMean" << brCalMean;
+                }
             }
 
             if((ui->any_image->isChecked()) && (CountOfFrame == 0))
@@ -407,7 +434,7 @@ void MainWindow::onGetData(ushort * tdata)
             }
 
             // реализация заданного числа кадров в снимке
-            if(!enable_continue&&ui->any_image->isChecked())
+            if(!enable_continue && ui->any_image->isChecked())
             {
                 for (int k = 0; k < IMAGE_HEIGHT - 1; k++)
                 {
@@ -441,8 +468,8 @@ void MainWindow::onGetData(ushort * tdata)
             {
                 for (int  j = 0; j < 50; j++)
                 {
-                    pixel = dData[(k*IMAGE_WIDTH)+j];
-                    avpixel = (avpixel + pixel)/2;
+                    pixel = dData[(k * IMAGE_WIDTH) + j];
+                    avpixel = (avpixel + pixel )/ 2;
                 }
             }
             qDebug() << "avpixel = " << avpixel;
@@ -486,23 +513,35 @@ void MainWindow::onGetData(ushort * tdata)
 
             if ((!needRenew))
             {
-                // сохранение среднего значения пиксела на снимке
+                // сохранение данных о снимке
                 QString txt = QString("Image%1").arg(CountOfShoot);
                 QString value = QString("Average = %1 Accumulation time = %2").arg(avpixel);
                 settingtxt->setValue(txt,value);
                 settingtxt->sync();
 
-                // сохранение изображений в raw-формате
-                QString NameForSaveImage;
-                NameForSaveImage = service_functions::RenameOfImages(CountOfShoot);
-                QFile file(FileDirectory + NameForSaveImage);
-                if (!file.open(QIODevice::WriteOnly))
+                // сохранение изображений в tiff-формате
+
+                // Коррекция первого файла по автоматически вычисленным границам
+                for (int k = 0; k < IMAGE_HEIGHT - 1; k++)
                 {
-                    qDebug() << "Cканирование:: Сохранение изображения:: Ошибка открытия файла";
+                    for (int j = 0; j < IMAGE_WIDTH - 1; j++)
+                    {
+                        if (ui->brCalibration->isChecked())
+                            calFactor = (float)brCalMean/(float)brCalData[(k * IMAGE_WIDTH) + j];
+
+                        pixel = dData[(k * IMAGE_WIDTH)+j] * calFactor;
+                        pixel = 65535  * (pixel - min) / (max - min) ; // TODO min, max??
+                        if (pixel > 65535) pixel = 65535;
+                        if (pixel < 0) pixel = 0;
+                        if (ui->comboBox_2->currentIndex() == 1) dData[(k * IMAGE_WIDTH) + j] = pixel;
+                        else dData[(k * IMAGE_WIDTH) + j] = 65535 - pixel;
+                    }
                 }
-                file.write((char*)dData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
+
+                tiff->WriteTIFF(File.toStdString() + NameForSave.toStdString(),
+                                dData, IMAGE_WIDTH, IMAGE_HEIGHT, 0, 1., 16);
                 frame->setRAWImage(dData);
-                CountOfShoot++;
+                CountOfShoot ++;
                 CountOfFrame = 0;
                 enable_continue = false;
             }
@@ -518,6 +557,9 @@ void MainWindow::onGetData(ushort * tdata)
             emit nextStep(SizeOfStep, CountOfShoot);
             qDebug() << "nextStep" << SizeOfStep << CountOfShoot;
             break;
+        }
+
+
         }
         case 2:
         {
@@ -707,235 +749,6 @@ void MainWindow::on_load_image_clicked()
     }  
 }
 
-//  конвертирование изображения в 8-битное
-void MainWindow::on_convert_image_clicked()
-{
-    if (ui->image_format->currentIndex() == 0) convertToTiff();
-    if (ui->image_format->currentIndex() == 1) convertTo8Bit();
-}
-
-void MainWindow::convertToTiff()
-{
-    QString CurrentPicture;
-    ushort CountOfImage;
-    ushort * dData;
-    ushort * brCalData;
-    dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
-    brCalData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
-    QString File = QFileDialog::getExistingDirectory(0,"Выбор файла", "", QFileDialog::ShowDirsOnly);
-    QSettings *setting_2 = new QSettings (  File + "/ShootingMode.ini", QSettings::IniFormat ); // &\? directory of .ini
-    CountOfImage = setting_2->value("NumberOfImage" , 0).toInt();
-    qDebug() << "Конвертирование:: Число изображений для конвертации:" << CountOfImage;
-    int min = 62341;
-    int max = 0;
-    short brCalMean = 0;
-    float calFactor = 1.0;
-
-    // Загружаем калибровочный файл, только если установлен флаг
-    if (ui->brCalibration->isChecked())
-    {
-        CurrentPicture = QString("/brCal.raw");
-        QFile brCalFile(File + CurrentPicture);
-        if (!brCalFile.open(QIODevice::ReadOnly))
-        {
-            qDebug() << "Конвертирование::Ошибка открытия файла";
-        }
-        brCalFile.read((char*)brCalData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
-
-        // Вычисляем среднее значение по файлу
-        brCalMean = brCalData[0];
-        for (int i = 0; i< IMAGE_WIDTH*IMAGE_HEIGHT; i++)
-            brCalMean = (brCalMean + brCalData[i])/2;
-        qDebug() << brCalMean;
-    }
-
-    for (uint i = 1; i <= CountOfImage; i++)
-    {
-        if (i < 10) CurrentPicture = QString("/image_000%1.raw").arg(i);
-        if (i >=10 && i < 100) CurrentPicture = QString("/image_00%1.raw").arg(i);
-        if (i >=100) CurrentPicture = QString("/image_0%1.raw").arg(i);
-        QFile file(File + CurrentPicture);
-        if (!file.open(QIODevice::ReadOnly))
-        {
-            qDebug() << "Конвертирование::Ошибка открытия файла";
-        }
-        file.read((char*)dData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
-
-        QString NameForSave;
-        if (i < 11) NameForSave = QString("/s_000%1.tif").arg(i-1);
-        if (i >=11 && i < 101) NameForSave = QString("/s_00%1.tif").arg(i-1);
-        if (i >=101) NameForSave = QString("/s_0%1.tif").arg(i-1);
-
-        if (i == 1)
-        {
-            // Расчет гистограммы первого файла
-            int pixel = 0;
-            uint * hist = new uint[65535];
-            for (int k = 0; k < 65535; k++)
-            {
-                hist[k] = 0;
-            }
-
-            for (int k=0;k<IMAGE_HEIGHT-1;k++)
-            {
-                for (int j=0; j<IMAGE_WIDTH-1; j++)
-                {
-                    pixel = dData[(k*IMAGE_WIDTH)+j];
-                    hist[pixel]++;
-                }
-            }
-
-            for (int k = 0; k < 65535; k++)
-            {
-                if (hist[k] > 100)
-                {
-                    min = k;
-                    break;
-                }
-            }
-
-            for (int k = 65535; k > 0; k--)
-            {
-                if (hist[k] > 100)
-                {
-                    max = k;
-                    break;
-                }
-            }
-
-            min -= 1000;
-            max += 1000;
-            qDebug() << "min" << min << "max" << max;
-            pixel = 0;
-
-            // Коррекция первого файла по автоматически вычисленным границам
-            for (int k=0;k<IMAGE_HEIGHT-1;k++)
-            {
-                for (int j=0; j<IMAGE_WIDTH-1; j++)
-                {
-                    if (ui->brCalibration->isChecked())
-                        calFactor = (float)brCalMean/(float)brCalData[(k*IMAGE_WIDTH)+j];
-
-                    pixel = dData[(k*IMAGE_WIDTH)+j]*calFactor;
-                    pixel = 65535  * (pixel - min) / (max - min) ;
-                    if (pixel>65535) pixel = 65535;
-                    if (pixel<0) pixel = 0;
-                    if (ui->comboBox_2->currentIndex() == 1) dData[(k*IMAGE_WIDTH)+j] = pixel;
-                    else dData[(k*IMAGE_WIDTH)+j] = 65535 - pixel;
-                }
-
-            }
-        }
-        else
-        {
-            int pixel = 0;
-            pixel = 0;
-            for (int k=0;k<IMAGE_HEIGHT-1;k++)
-            {
-                for (int j=0; j<IMAGE_WIDTH-1; j++)
-                {
-                    if (ui->brCalibration->isChecked())
-                        calFactor = (float)brCalMean/(float)brCalData[(k*IMAGE_WIDTH)+j];
-                    pixel = dData[(k*IMAGE_WIDTH)+j]*calFactor;
-                    pixel = 65535 * (pixel - min) / (max - min);
-                    if (pixel>65535) pixel = 65535;
-                    if (pixel<0) pixel = 0;
-                    if (ui->comboBox_2->currentIndex() == 1) dData[(k*IMAGE_WIDTH)+j] = pixel;
-                    else dData[(k*IMAGE_WIDTH)+j] = 65535 - pixel;
-                }
-            }
-        }
-
-        tiff->WriteTIFF(File.toStdString() + NameForSave.toStdString(),
-                        dData, IMAGE_WIDTH, IMAGE_HEIGHT, 0, 1., 16);
-    }
-}
-
-void MainWindow::convertTo8Bit()
-{
-    QString CurrentPicture;
-    ushort CountOfImage;
-    ushort * dData;
-    int avpixel = 0;
-    int avpixel_new = 0;
-    dData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
-    QSettings *setting_2 = new QSettings (  FileDirectory , QSettings::IniFormat ); // &\? directory of .ini
-    CountOfImage = setting_2->value("NumberOfImage" , 0).toInt();
-    qDebug() << "Конвертирование convertTo8Bit:: Число изображений для конвертации:" << CountOfImage;
-    for (uint i = 1; i <= CountOfImage; i++)
-    {
-        if (i < 10) CurrentPicture = QString("/image_000%1.raw").arg(i);
-        if (i >=10 && i < 100) CurrentPicture = QString("/image_00%1.raw").arg(i);
-        if (i >=100) CurrentPicture = QString("/image_0%1.raw").arg(i);
-        QFile file(FileDirectory + CurrentPicture);
-        if (!file.open(QIODevice::ReadOnly))
-        {
-            qDebug() << "Конвертирование::Ошибка открытия файла";
-        }
-        file.read((char*)dData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
-
-        QString NameForSave;
-        if (i < 10) NameForSave = QString("/image_000%1.jpg").arg(i);
-        if (i >=10 && i < 100) NameForSave = QString("/image_00%1.jpg").arg(i);
-        if (i >=100) NameForSave = QString("/image_%01.jpg").arg(i);
-
-        if (i == 1)
-        {
-            avpixel = dData[0];
-            int pixel = 0;
-            for (int k=0; k<50; k++)
-            {
-                for (int j=0; j<50; j++)
-                {
-                    pixel = dData[(k*IMAGE_WIDTH)+j];
-                    avpixel = (avpixel + pixel)/2;
-                }
-            }
-            qDebug() << "average" << avpixel;
-        }
-        else
-        {
-            avpixel_new = dData[0];
-            int pixel = 0;
-            for (int k=0; k<100; k++)
-            {
-                for (int j=0; j<100; j++)
-                {
-                    pixel = dData[(k*IMAGE_WIDTH)+j];
-                    avpixel_new = (avpixel_new + pixel)/2;
-                }
-            }
-            qDebug() << "average_new do" << avpixel_new;
-            avpixel_new -= avpixel;
-            qDebug() << "average_new posle" << avpixel_new;
-            pixel = 0;
-            for (int k=0;k<IMAGE_HEIGHT-1;k++)
-            {
-                for (int j=0; j<IMAGE_WIDTH-1; j++)
-                {
-                    pixel = dData[(k*IMAGE_WIDTH)+j] - avpixel_new;
-                    dData[(k*IMAGE_WIDTH)+j] = pixel;
-                }
-            }
-        }
-
-        QImage image(IMAGE_WIDTH, IMAGE_HEIGHT, QImage::Format_RGB32 );
-        int pixel = 0;
-        for (int k=0;k<IMAGE_HEIGHT-1;k++)
-        {
-            for (int j=0; j<IMAGE_WIDTH-1; j++)
-            {
-                pixel = dData[(k*IMAGE_WIDTH)+j]/ 64;
-                if (pixel > 255) pixel = 255;
-                if (pixel < 0) pixel = 0;
-                image.setPixel(j,k,QColor(pixel,pixel,pixel,255).rgba());
-            }
-        }
-        image.save(FileDirectory + NameForSave);
-    }
-    delete[] dData;
-}
-
 void MainWindow::on_SaveAutoContrast_clicked()
 {
 //    chooseDirectory(4);
@@ -972,7 +785,7 @@ void MainWindow::on_NumberOfSteps_textChanged(const QString &arg1)
     (QString)waste = arg1;
     if ((ui->NumberOfSteps->text().toInt() == 1 && ui->with_rotate->isChecked()) ||
         (ui->NumberOfSteps->text().toInt() != 1 && !ui->with_rotate->isChecked()) ||
-         ui->NumberOfSteps->text().toInt() < 1 || ui->comboBox_2->currentIndex() > 2)
+         ui->NumberOfSteps->text().toInt() < 1 || ui->comboBox_2->currentIndex() > NUMBER_OF_RECIEVER - 1)
         ui->Start_AutoScan->setDisabled(true);
     else
         ui->Start_AutoScan->setDisabled(false);
@@ -984,7 +797,7 @@ void MainWindow::on_with_rotate_stateChanged(int arg1)
     waste = arg1;
     if ((ui->NumberOfSteps->text().toInt() == 1 && ui->with_rotate->isChecked()) ||
         (ui->NumberOfSteps->text().toInt() != 1 && !ui->with_rotate->isChecked()) ||
-         ui->NumberOfSteps->text().toInt() < 1 || ui->comboBox_2->currentIndex() > 2)
+         ui->NumberOfSteps->text().toInt() < 1 || ui->comboBox_2->currentIndex() > NUMBER_OF_RECIEVER - 1)
         ui->Start_AutoScan->setDisabled(true);
     else
         ui->Start_AutoScan->setDisabled(false);
@@ -1123,11 +936,11 @@ void MainWindow::MakeConfig()
     int CameraToSource = 498;
 
     int PixelSize;
-    if (ui->comboBox_2->currentIndex() == 0)
+    if (ui->comboBox_2->currentIndex() == 0) // alphaCam
         PixelSize = 189;
-    if (ui->comboBox_2->currentIndex() == 1)
+    if (ui->comboBox_2->currentIndex() == 1) // mltCam
         PixelSize = 50;
-    if (ui->comboBox_2->currentIndex() == 2)
+    if (ui->comboBox_2->currentIndex() == 2) // ViVixCam
         PixelSize = 200;
 
     float ScaledPixelSize = (float)ObjectToSource*(float)PixelSize/(float)CameraToSource;
@@ -1143,7 +956,6 @@ void MainWindow::MakeConfig()
     setting->setValue("System/Camera Pixel Size (um)" , QString::number(PixelSize));
     setting->setValue("System/CameraXYRatio" , QString::number(1.0));
 
-    //setting->setValue("Acquisition/Data Directory" , "D:\004 - Projection data\implant-200\s_");
     setting->setValue("Acquisition/Filename Prefix" , "s_");
     setting->setValue("Acquisition/Number Of Files" , QString::number(ui->NumberOfSteps->text().toInt()));
     setting->setValue("Acquisition/Number Of Rows" , QString::number(IMAGE_HEIGHT));
@@ -1162,20 +974,38 @@ void MainWindow::MakeConfig()
     setting->setValue("Acquisition/Exposure(ms)" , QString::number(ui->Exposure->text().toInt()));
     setting->setValue("Acquisition/Rotation Step (deg)" , QString::number(360.0/(float)ui->NumberOfSteps->text().toInt()));
     setting->setValue("Acquisition/Use 360 Rotation" , "YES");
-    //setting->setValue("Acquisition/Scanning position" , "ScanningPosition");
     setting->setValue("Acquisition/Flat Field Correction" ,"OFF" );
     setting->setValue("Acquisition/Sharpening (%)" , "Sharpening");
-    //setting->setValue("Acquisition/Random Movement" , "OFF");
     setting->setValue("Acquisition/Geometrical Correction" , "ON" );
-    //setting->setValue("Acquisition/Filter" , "Cu 2mm");
     setting->setValue("Acquisition/Rotation Direction" , "CC");
     setting->setValue("Acquisition/Type of Detector Motion" , "STEP AND SHOOT");
-    //setting->setValue("Acquisition/Scanning Trajectory" , "ROUND");
-    //setting->setValue("Acquisition/Number of connected scans" , 1);
-    //setting->setValue("Acquisition/Study Date and Time" , "Dec 14, 2010  16:58:03");
-    //setting->setValue("Acquisition/Scan duration" , "00:06:13");
-
     setting->sync();
 
     service_functions::deletespace(FileDirectory + "s_.log");
+}
+
+void MainWindow::save_rap_working_time()
+{
+    QFile file("D:/QtProjects/s_.log");
+    QTime full_time;
+    if (file.exists())
+    {
+        // MAYBE FILE.CLOSE
+        QSettings *setting = new QSettings ( "D:/QtProjects/s_.log" , QSettings::IniFormat); // TODO выбор директории для лог файла
+        full_time = setting->value("work time").toTime();
+    }
+    QSettings *setting_2 = new QSettings ( "D:/QtProjects/s_.log" , QSettings::IniFormat); // TODO выбор директории для лог файла
+    full_time += (finish_time - start_time);
+    setting_2->setValue("work time",full_time);
+}
+
+void MainWindow::set_start_time()
+{
+    start_time = QTime::currentTime();
+}
+
+void MainWindow::set_finish_time()
+{
+    finish_time = QTime::currentTime();
+    save_rap_working_time();
 }
