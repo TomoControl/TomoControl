@@ -377,7 +377,9 @@ void MainWindow::onGetData(ushort * tdata)
         qDebug() << "OnGetData";
         ushort * dData;
         dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
+        qDebug() << "sum start" << QTime::currentTime().toString("hh:mm:ss.zzz");
         memcpy(dData, tdata, IMAGE_WIDTH * IMAGE_HEIGHT * 2);
+        qDebug() << "sum end" << QTime::currentTime().toString("hh:mm:ss.zzz");
 
         switch (selected_mode)
         {
@@ -405,7 +407,7 @@ void MainWindow::onGetData(ushort * tdata)
             }
 
             // реализация заданного числа кадров в снимке
-            if(!enable_continue)
+            if(!enable_continue&&ui->any_image->isChecked())
             {
                 for (int k = 0; k < IMAGE_HEIGHT - 1; k++)
                 {
@@ -418,6 +420,7 @@ void MainWindow::onGetData(ushort * tdata)
                 if( CountOfFrame == (NUMBER_OF_FRAME - 1))
                 {
                     enable_continue = true;
+                    memcpy(dData, frameData, IMAGE_WIDTH * IMAGE_HEIGHT * 2);
                     delete[] frameData;
                 }
                 else
@@ -451,6 +454,7 @@ void MainWindow::onGetData(ushort * tdata)
                 avFirstImage = avpixel;
             }
             else
+            {
                 // коррекция времени экспозиции
                 if (avpixel - avFirstImage > ui->Compare->text().toInt())
                 {
@@ -500,6 +504,7 @@ void MainWindow::onGetData(ushort * tdata)
                 frame->setRAWImage(dData);
                 CountOfShoot++;
                 CountOfFrame = 0;
+                enable_continue = false;
             }
 
             delete[] dData;

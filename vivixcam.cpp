@@ -211,6 +211,7 @@ void ViVIXCam::AcquireImage()
         qDebug() << "ViVIXCAM::SWTrigger is failed" << nResult;
         return;
     }
+     qDebug() << "AcquireImage" << QTime::currentTime().toString("hh:mm:ss.zzz");
 }
 
 
@@ -249,7 +250,7 @@ void ViVIXCam::NotifyFrameGrabberImageIn(Vieworks::vivix::DETECTOR_ID id, Viewor
 //            file.write((char*)dData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
 //            delete[] dData;
 
-
+            qDebug() << "AcquireImage end" << QTime::currentTime().toString("hh:mm:ss.zzz");
             getInstance()->emitSignal((ushort *) image->Image);
         }
     }
