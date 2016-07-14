@@ -674,8 +674,8 @@ void MainWindow::convertToTiff()
     ushort * brCalData;
     dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
     brCalData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
-    QString File = QFileDialog::getOpenFileName(0,"Выбор файла", "", "ShootingMode.ini");
-    QSettings *setting_2 = new QSettings (  File , QSettings::IniFormat ); // &\? directory of .ini
+    QString File = QFileDialog::getExistingDirectory(0,"Выбор файла", "", QFileDialog::ShowDirsOnly);
+    QSettings *setting_2 = new QSettings (  File + "/ShootingMode.ini", QSettings::IniFormat ); // &\? directory of .ini
     CountOfImage = setting_2->value("NumberOfImage" , 0).toInt();
     qDebug() << "Конвертирование:: Число изображений для конвертации:" << CountOfImage;
     int min = 62341;
@@ -686,8 +686,8 @@ void MainWindow::convertToTiff()
     // Загружаем калибровочный файл, только если установлен флаг
     if (ui->brCalibration->isChecked())
     {
-        CurrentPicture = QString("brCal.raw");
-        QFile brCalFile(FileDirectory + CurrentPicture);
+        CurrentPicture = QString("/brCal.raw");
+        QFile brCalFile(File + CurrentPicture);
         if (!brCalFile.open(QIODevice::ReadOnly))
         {
             qDebug() << "Конвертирование::Ошибка открытия файла";
@@ -703,10 +703,10 @@ void MainWindow::convertToTiff()
 
     for (uint i = 1; i <= CountOfImage; i++)
     {
-        if (i < 10) CurrentPicture = QString("image_000%1.raw").arg(i);
-        if (i >=10 && i < 100) CurrentPicture = QString("image_00%1.raw").arg(i);
-        if (i >=100) CurrentPicture = QString("image_0%1.raw").arg(i);
-        QFile file(FileDirectory + CurrentPicture);
+        if (i < 10) CurrentPicture = QString("/image_000%1.raw").arg(i);
+        if (i >=10 && i < 100) CurrentPicture = QString("/image_00%1.raw").arg(i);
+        if (i >=100) CurrentPicture = QString("/image_0%1.raw").arg(i);
+        QFile file(File + CurrentPicture);
         if (!file.open(QIODevice::ReadOnly))
         {
             qDebug() << "Конвертирование::Ошибка открытия файла";
@@ -798,7 +798,7 @@ void MainWindow::convertToTiff()
             }
         }
 
-        tiff->WriteTIFF(FileDirectory.toStdString() + NameForSave.toStdString(),
+        tiff->WriteTIFF(File.toStdString() + NameForSave.toStdString(),
                         dData, IMAGE_WIDTH, IMAGE_HEIGHT, 0, 1., 16);
     }
 }
