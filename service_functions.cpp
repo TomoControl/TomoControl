@@ -14,7 +14,7 @@ QString service_functions::RenameOfImages(ushort Count)
     {
         FormatOfName = '0' + FormatOfName;
     }
-    FormatOfName = "image_" + FormatOfName + ".raw";
+    FormatOfName = "s_" + FormatOfName + ".tif";
     qDebug() << "ImageCount" << Count;
     return FormatOfName;
 }

@@ -24,7 +24,8 @@ MainWindow::MainWindow(QWidget *parent) :
     QImage image(IMAGE_WIDTH, IMAGE_HEIGHT, QImage::Format_Indexed8);
     rxImage = image;
 
-    start_time = 0; finish_time = 0;
+    start_time.setHMS(0,0,0,0);
+    finish_time.setHMS(0,0,0,0);
 
     // графический интерфейс
     ui->setupUi(this);
@@ -129,7 +130,9 @@ MainWindow::~MainWindow()
     setting->setValue("Exposure" , ui->Exposure->text().toInt());
     setting->setValue("IntensiveCorrection" , ui->Compare->text().toInt());
     setting->setValue("TimeCorrect" , ui->TimeCorrect->text().toInt());
-    setting->setValue("State_checkbox" , ui->with_rotate->isChecked());
+    setting->setValue("With_rotate" , ui->with_rotate->isChecked()); // TODO: Check number of shoot
+    setting->setValue("Any_image" , ui->any_image->isChecked());
+    setting->setValue("BrCalibration" , ui->brCalibration->isChecked());
     setting->sync();
 
     stepmotor_1->setRunning(false);
@@ -383,9 +386,7 @@ void MainWindow::onGetData(ushort * tdata)
         qDebug() << "OnGetData";
         ushort * dData;
         dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
-        qDebug() << "sum start" << QTime::currentTime().toString("hh:mm:ss.zzz");
         memcpy(dData, tdata, IMAGE_WIDTH * IMAGE_HEIGHT * 2);
-        qDebug() << "sum end" << QTime::currentTime().toString("hh:mm:ss.zzz");
 
         switch (selected_mode)
         {
@@ -394,6 +395,7 @@ void MainWindow::onGetData(ushort * tdata)
             if ((CountOfShoot == 0) && (CountOfFrame == 0))
             {
                 qDebug() << "mainwindow :: create ini";
+                calFactor = 1.0;
 
                 // создание ini-файла с параметрами съемки
                 QString Time_start = QTime::currentTime().toString("hh-mm-ss");
@@ -411,20 +413,21 @@ void MainWindow::onGetData(ushort * tdata)
                 {
                     brCalData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
                     brCalMean = 0;
-                    calFactor = 1.0;
 
-                    QFile brCalFile(FileDirectory/*????*/ + "/brCal.raw");  // TODO где лежит калибровочный файл
+
+                    QFile brCalFile("C:/TomoControl/brCal.raw");
                     if (!brCalFile.open(QIODevice::ReadOnly))
                     {
                         qDebug() << "Конвертирование::Ошибка открытия файла";
                     }
                     brCalFile.read((char*)brCalData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
 
-                    // Вычисляем среднее значение по файлу
-                    brCalMean = brCalData[0];
+                    // Вычисляем максимальное значение по файлу
+                    brCalMean = 0;
+
                     for (int i = 0; i < IMAGE_WIDTH * IMAGE_HEIGHT; i++)
-                        brCalMean = (brCalMean + brCalData[i]) / 2;
-                    qDebug() << "brCalMean" << brCalMean;
+                        if (brCalData[i] > brCalMean) brCalMean = brCalData[i];
+                    qDebug() << brCalMean;
                 }
             }
 
@@ -528,18 +531,19 @@ void MainWindow::onGetData(ushort * tdata)
                     {
                         if (ui->brCalibration->isChecked())
                             calFactor = (float)brCalMean/(float)brCalData[(k * IMAGE_WIDTH) + j];
-
+                        //qDebug() << calFactor;
                         pixel = dData[(k * IMAGE_WIDTH)+j] * calFactor;
-                        pixel = 65535  * (pixel - min) / (max - min) ; // TODO min, max??
-                        if (pixel > 65535) pixel = 65535;
-                        if (pixel < 0) pixel = 0;
-                        if (ui->comboBox_2->currentIndex() == 1) dData[(k * IMAGE_WIDTH) + j] = pixel;
+                        //pixel = 65535  * (pixel - min) / (max - min) ;
+                        if (ui->comboBox_2->currentIndex() != 0) dData[(k * IMAGE_WIDTH) + j] = pixel;
                         else dData[(k * IMAGE_WIDTH) + j] = 65535 - pixel;
                     }
                 }
 
-                tiff->WriteTIFF(File.toStdString() + NameForSave.toStdString(),
-                                dData, IMAGE_WIDTH, IMAGE_HEIGHT, 0, 1., 16);
+                QString NameForSaveImage;
+                NameForSaveImage = service_functions::RenameOfImages(CountOfShoot-1);
+                QString file = FileDirectory + NameForSaveImage;
+
+                tiff->WriteTIFF(file.toStdString(), dData, IMAGE_WIDTH, IMAGE_HEIGHT, 0, 1., 16);
                 frame->setRAWImage(dData);
                 CountOfShoot ++;
                 CountOfFrame = 0;
@@ -559,8 +563,6 @@ void MainWindow::onGetData(ushort * tdata)
             break;
         }
 
-
-        }
         case 2:
         {
             calb_step ++;
@@ -706,31 +708,6 @@ void MainWindow::onGetData(ushort * tdata)
         }
 }
 
-// слот по обработке изменения выбранного снимка в CocmboBox
-void MainWindow::on_comboBox_currentIndexChanged(int index)
-{
-    QString CheckedImage;
-    if (index < 9) CheckedImage = QString("/image_000%1.raw").arg(index+1);
-    if (index >= 9 && index < 99) CheckedImage = QString("/image_00%1.raw").arg(index+1);
-    if (index >= 99) CheckedImage = QString("/image_0%1.raw").arg(index+1);
-    ushort * dData;
-    dData = new ushort[IMAGE_WIDTH*IMAGE_HEIGHT];
-    QString Dir = QString(FileDirectory + CheckedImage);
-    QFile file(Dir);
-    qDebug() << "load" << FileDirectory + CheckedImage ;
-    if (!file.open(QIODevice::ReadOnly))
-    {
-        qDebug() << "Загрузка изображения::Ошибка открытия файла";
-    }
-    file.read((char*)dData, IMAGE_WIDTH*IMAGE_HEIGHT*2);
-
-    frame->setRAWImage(dData);
-    // контрастирование по выставленной гистограмме
-    graphicsScene->onHistChanged();
-
-    delete[] dData;
-
-}
 
 // загрузка полученных ранее проекционных данных
 void MainWindow::on_load_image_clicked()
@@ -918,7 +895,9 @@ void MainWindow::SetUIData()
     ui->Compare->setText(setting->value("IntensiveCorrection").toString());
     ui->TimeCorrect->setText(setting->value("TimeCorrect").toString());
     ui->Exposure->setText(setting->value("Exposure").toString());
-    ui->with_rotate->setChecked(setting->value("State_checkbox").toBool()); // to test
+    ui->with_rotate->setChecked(setting->value("With_rotate").toBool());
+    ui->any_image->setChecked(setting->value("Any_image").toBool());
+    ui->brCalibration->setChecked(setting->value("BrCalibration").toBool());
     ui->comboBox_2->setDisabled(true);
     ui->Start_AutoScan->setDisabled(false);
     ui->handle->setDisabled(false);
@@ -986,17 +965,17 @@ void MainWindow::MakeConfig()
 
 void MainWindow::save_rap_working_time()
 {
-    QFile file("D:/QtProjects/s_.log");
-    QTime full_time;
-    if (file.exists())
-    {
-        // MAYBE FILE.CLOSE
-        QSettings *setting = new QSettings ( "D:/QtProjects/s_.log" , QSettings::IniFormat); // TODO выбор директории для лог файла
-        full_time = setting->value("work time").toTime();
-    }
-    QSettings *setting_2 = new QSettings ( "D:/QtProjects/s_.log" , QSettings::IniFormat); // TODO выбор директории для лог файла
-    full_time += (finish_time - start_time);
-    setting_2->setValue("work time",full_time);
+//    QFile file("D:/QtProjects/s_.log"); TODO: do it
+//    QTime full_time;
+//    if (file.exists())
+//    {
+//        file.close();
+//        QSettings *setting = new QSettings ( "C:/TomoControl/s_.log" , QSettings::IniFormat);
+//        full_time = setting->value("work time").toTime();
+//    }
+//    QSettings *setting_2 = new QSettings ( "C:/TomoControl/s_.log" , QSettings::IniFormat);
+//    full_time += (finish_time - start_time);
+//    setting_2->setValue("work time",full_time);
 }
 
 void MainWindow::set_start_time()
