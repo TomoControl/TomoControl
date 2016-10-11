@@ -180,7 +180,7 @@ void myFrame::setRAWImage(ushort * RAWData)
         quint8 * pix = line;
         for ( int x = 0; x < rxImage.width(); ++x, pix += 1)
         {
-            pixel  = RAWData[(y*IMAGE_WIDTH)+x]/64;
+            pixel  = RAWData[(y*IMAGE_WIDTH)+x]/256;
             if (pixel > 255)
             {
                 pixel = 255;

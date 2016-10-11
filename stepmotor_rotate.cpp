@@ -464,14 +464,14 @@ void stepmotor_rotate::go_to(int step,Axes_Mask axes)
     qDebug() << "stepmotor_rotate::перемещение";
     uint step_1000, step_100, step_10, step_1;
     QByteArray body;
-    qDebug() << "step_left2" << step;
+   // qDebug() << "step_left2" << step;
     calb_axes = axes;
     direction = 0;
     if (step < 0)
     {
         direction = 1;
         step *= -1;
-        qDebug() << "step_left3" << step;
+//        qDebug() << "step_left3" << step;
     }
 
     step_1000 = step / 1000;

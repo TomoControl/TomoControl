@@ -127,7 +127,7 @@ void Dialog::on_reciever_back_pressed()
         Axes_Mask axes;
         axes = {0};
         axes.a4 = 1;
-        emit move(axes,~MAX_FREQUENCY);
+        emit move(axes,-MAX_FREQUENCY);
     }
 }
 
@@ -160,7 +160,7 @@ void Dialog::on_reciever_left_pressed()
         Axes_Mask axes;
         axes = {0};
         axes.a1 = 1;
-        emit move(axes,~MAX_FREQUENCY);
+        emit move(axes,-MAX_FREQUENCY);
     }
 }
 
@@ -238,7 +238,7 @@ void Dialog::on_object_left_rotate_pressed()
     Axes_Mask axes;
     axes = {0};
     axes.a2 = 1;
-    emit move(axes,~MAX_FREQUENCY);
+    emit move(axes,-MAX_FREQUENCY);
 }
 
 void Dialog::on_object_up_pressed()
@@ -248,7 +248,7 @@ void Dialog::on_object_up_pressed()
         Axes_Mask axes;
         axes = {0};
         axes.a2 = 1;
-        emit move_2(axes,~MAX_FREQUENCY);
+        emit move_2(axes,-MAX_FREQUENCY);
     }
 }
 
@@ -322,7 +322,7 @@ void Dialog::on_source_back_pressed()
         Axes_Mask axes;
         axes = {0};
         axes.a4 = 1;
-        emit move_2(axes,~MAX_FREQUENCY);
+        emit move_2(axes,-MAX_FREQUENCY);
     }
 }
 
@@ -333,7 +333,7 @@ void Dialog::on_source_left_pressed()
         Axes_Mask axes;
         axes = {0};
         axes.a1 = 1;
-        emit move_2(axes,~MAX_FREQUENCY);
+        emit move_2(axes,-MAX_FREQUENCY);
     }
 }
 

@@ -84,12 +84,10 @@ MainWindow::MainWindow(QWidget *parent) :
     uchar ControlNum;
     ControlNum = 1;
     emit init_stepmotor1(Source, Destination, SourcePort, DestinationPort, ControlNum);
-    //stepmotor_1->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
     SourcePort = 1234;
     Destination = ("192.168.10.11");//QHostAddress::LocalHost;
     ControlNum = 2;
     emit init_stepmotor2(Source, Destination, SourcePort, DestinationPort, ControlNum);
-    //stepmotor_2->initialization(Source, Destination, SourcePort, DestinationPort, ControlNum);
 
     Timer = new QTimer;
     QObject::connect(Timer , SIGNAL(timeout()) , this, SLOT(myTimer()));
@@ -534,6 +532,7 @@ void MainWindow::onGetData(ushort * tdata)
                         //qDebug() << calFactor;
                         pixel = dData[(k * IMAGE_WIDTH)+j] * calFactor;
                         //pixel = 65535  * (pixel - min) / (max - min) ;
+                        if (pixel > 65534) pixel = 65534;
                         if (ui->comboBox_2->currentIndex() != 0) dData[(k * IMAGE_WIDTH) + j] = pixel;
                         else dData[(k * IMAGE_WIDTH) + j] = 65535 - pixel;
                     }
@@ -568,35 +567,40 @@ void MainWindow::onGetData(ushort * tdata)
             calb_step ++;
             qDebug() << "move_solution";
 
-            //frame->setRAWImage(dData);
+            frame->setRAWImage(dData);
 
             int left_border = 0, right_border = 0, center = 0;
             bool left_c = 1, right_c = 1;
 
-            int i = 600 ;
-            int pixel = dData[i * IMAGE_WIDTH];
-            int pixel_old = dData[i * IMAGE_WIDTH];
+            int j = 1800;
+            int pixel = dData[j];
+            int pixel_old = dData[j];
+            int tmp = 0;
 
-            for (int j = 100; j < IMAGE_WIDTH - 1; j++ )
+            for (int i = 100; i < IMAGE_WIDTH - 1; i++ )
             {
                 pixel_old = pixel;
                 pixel = dData[i * IMAGE_WIDTH + j];
+                if(i == 100)pixel_old = pixel;
 
-                if ((pixel - pixel_old > THRESHOLD)&&(left_c))
+//                tmp = pixel - pixel_old;
+//                if((tmp*tmp) > 40000 )  qDebug() << "pix" << pi/*xel << pixel_old << i;
+
+                if ((pixel_old - pixel > THRESHOLD)&&(left_c))
                 {
-                    qDebug() << "left" << j;
-                    left_border = j;
+                    qDebug() << "left_border" << i;
+                    left_border = i;
                     left_c = 0;
                 }
-                if ((-1*(pixel - pixel_old) > THRESHOLD)&&(right_c)&&(!left_c))
+                if ((-1*(pixel_old - pixel) > THRESHOLD)&&(right_c)&&(!left_c))
                 {
-                    qDebug() << "right" << j;
-                    right_border = j;
+                    qDebug() << "right_border" << i;
+                    right_border = i;
                     right_c = 0;
                 }
-                if(left_border*right_border > 0)
+                if(left_border * right_border > 0)
                 {
-                    qDebug() <<" zawel";
+                    qDebug() << "left_border*right_border > 0";
                     center = (right_border + left_border) / 2;
                     left_border = 0;
                     right_border = 0;
@@ -611,7 +615,7 @@ void MainWindow::onGetData(ushort * tdata)
             }
             delete []dData;
 
-            qDebug() << calb_step << "step";
+            qDebug() << calb_step << "calb_step";
             switch (calb_step)
             {
             case 1:
@@ -628,22 +632,22 @@ void MainWindow::onGetData(ushort * tdata)
             case 2:
             {
                 qDebug() << "calb step = 2";
+                calb_step = 0;
                 int step;
                 Axes_Mask axes;
                 axes = stepmotor_2->reset_axes_mask();
                 axes.a1 = 1;
 
-                if(difference > 5 )
-                {step = ~step_size; qDebug() << difference << "difference";}
-                if(difference < -5 ) {step = step_size;qDebug() << difference << "difference_22222";}
+                if(difference > 5 ){step = step_size; qDebug() << difference << "difference";}
+                if(difference < -5 ) {step = -1*step_size;qDebug() << difference << "difference_22222";}
                 stepmotor_2->go_to_for_calb(step,axes);
 
                 // возвращение на первую линию
-                step = ~10000;
-                axes = stepmotor_2->reset_axes_mask();
-                axes.a4 = 1;
-                stepmotor_2->go_to(step,axes);
-                calb_step = 0;
+//                step = (-1*10000);
+//                axes = stepmotor_2->reset_axes_mask();
+//                axes.a4 = 1;
+//                stepmotor_2->go_to(step,axes);
+
                 break;
             }
             default:
@@ -659,14 +663,14 @@ void MainWindow::onGetData(ushort * tdata)
                 return;
             }
 
-            if((calb_step == 0) && (difference > 5))
+            if((calb_step == 0) && (difference*difference > 25))
             {
-                qDebug() << "calb diff";
                 //difference = 0;
                 cent_1 = 0;
                 cent_2 = 0;
                 step_size /= 2;
-                reciever->AcquireImage();
+                qDebug() << "calb diff step_size" << step_size;
+                //reciever->AcquireImage();
             }
 
 
@@ -831,6 +835,9 @@ void MainWindow::xray()
 void MainWindow::finish_calibration()
 {
     rap->off();
+
+    stepmotor_stop();
+
     disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
     disconnect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
     disconnect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
@@ -987,4 +994,15 @@ void MainWindow::set_finish_time()
 {
     finish_time = QTime::currentTime();
     save_rap_working_time();
+}
+
+void MainWindow::stepmotor_stop()
+{
+    Axes_Mask axes;
+    axes = stepmotor_2->reset_axes_mask();
+    axes.a1 = 1;
+    axes.a2 = 1;
+    axes.a4 = 1;
+    stepmotor_2->stop_movement(axes);
+    stepmotor_1->stop_movement(axes);
 }

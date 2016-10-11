@@ -133,6 +133,7 @@ private slots:
     void MakeDarkImage();
     void MakeConfig();
     void SetUIData();
+    void stepmotor_stop();
 
 private:
     Ui::MainWindow *ui;
