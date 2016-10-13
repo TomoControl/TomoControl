@@ -17,12 +17,9 @@ MainWindow::MainWindow(QWidget *parent) :
     selected_cam = 0;
     calb_step = 0;
     difference = 0;
-    step_size = 5000;
+    step_size = 10000;
     cent_2 = 0;
     enable_continue = true;
-
-    QImage image(IMAGE_WIDTH, IMAGE_HEIGHT, QImage::Format_Indexed8);
-    rxImage = image;
 
     start_time.setHMS(0,0,0,0);
     finish_time.setHMS(0,0,0,0);
@@ -581,35 +578,35 @@ void MainWindow::onGetData(ushort * tdata)
             {
                 pixel_old = pixel;
                 pixel = dData[i * IMAGE_WIDTH + j];
-                if(i == 100)pixel_old = pixel;
 
-//                tmp = pixel - pixel_old;
-//                if((tmp*tmp) > 40000 )  qDebug() << "pix" << pi/*xel << pixel_old << i;
+                if(i == 100) pixel_old = pixel;
 
-                if ((pixel_old - pixel > THRESHOLD)&&(left_c))
+                if ((-1*(pixel - pixel_old) > THRESHOLD)&&(left_c))
                 {
                     qDebug() << "left_border" << i;
                     left_border = i;
                     left_c = 0;
                 }
-                if ((-1*(pixel_old - pixel) > THRESHOLD)&&(right_c)&&(!left_c))
+
+                if (((pixel - pixel_old) > THRESHOLD)&&(right_c)&&(!left_c))
                 {
                     qDebug() << "right_border" << i;
                     right_border = i;
                     right_c = 0;
                 }
+
                 if(left_border * right_border > 0)
                 {
                     qDebug() << "left_border*right_border > 0";
                     center = (right_border + left_border) / 2;
                     left_border = 0;
                     right_border = 0;
-                    if (calb_step == 1) {compare = center; qDebug() << "compare" << compare; cent_1 = center;}
+                    if (calb_step == 1) {/*compare = center;*/ qDebug() << "compare" << compare; cent_1 = center;}
                     if (calb_step == 2)
                     {
-                        difference = (compare - center);
                         cent_2 = center;
-                        qDebug() << "cent" << cent_1 << cent_2;
+                        difference = (cent_1 - cent_2);
+                        qDebug() << "cent" << cent_1 << cent_2 << difference;
                     }
                 }
             }
@@ -625,29 +622,29 @@ void MainWindow::onGetData(ushort * tdata)
                 Axes_Mask axes;
                 axes = stepmotor_2->reset_axes_mask();
                 axes.a4 = 1;
-                step = 10000;
+                step = 20000; // 10000
                 stepmotor_2->go_to_for_calb(step,axes);
                 break;
             }
             case 2:
             {
-                qDebug() << "calb step = 2";
+                qDebug() << "calb step = 2" << calb_step;
                 calb_step = 0;
+                qDebug() << "proverka" << calb_step;
                 int step;
                 Axes_Mask axes;
                 axes = stepmotor_2->reset_axes_mask();
                 axes.a1 = 1;
 
-                if(difference > 5 ){step = step_size; qDebug() << difference << "difference";}
-                if(difference < -5 ) {step = -1*step_size;qDebug() << difference << "difference_22222";}
+                if(difference > DIFFERENT_LIMIT ){step = step_size; qDebug() << difference << "difference_11111";}
+                if(difference < -DIFFERENT_LIMIT ) {step = -step_size; qDebug() << difference << "difference_22222";}
                 stepmotor_2->go_to_for_calb(step,axes);
 
                 // возвращение на первую линию
-//                step = (-1*10000);
-//                axes = stepmotor_2->reset_axes_mask();
-//                axes.a4 = 1;
-//                stepmotor_2->go_to(step,axes);
-
+                step = -20000;
+                axes = stepmotor_2->reset_axes_mask();
+                axes.a4 = 1;
+                stepmotor_2->go_to(step,axes);
                 break;
             }
             default:
@@ -655,24 +652,26 @@ void MainWindow::onGetData(ushort * tdata)
             }
 
             qDebug() << difference << "dif " << cent_2 << "cent_2";
-            if((difference < 5)&&(-1*difference < 5)&&(cent_2 != 0))
+            if((difference < DIFFERENT_LIMIT)&&(difference > -DIFFERENT_LIMIT)&&(cent_2 != 0))
             {
                 difference = 0;
+                cent_2 = 0;
+                cent_1 = 0;
+                calb_step = 0;
                 qDebug() << "finish";
                 emit finish();
                 return;
             }
 
-            if((calb_step == 0) && (difference*difference > 25))
+            if((calb_step == 0) && (difference*difference > DIFFERENT_LIMIT*DIFFERENT_LIMIT))
             {
-                //difference = 0;
+                difference = 0;
                 cent_1 = 0;
                 cent_2 = 0;
-                step_size /= 2;
+                //step_size /= 2;
                 qDebug() << "calb diff step_size" << step_size;
-                //reciever->AcquireImage();
+                reciever->AcquireImage();
             }
-
 
             break;
         }

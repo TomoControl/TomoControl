@@ -56,7 +56,7 @@ public:
     Dialog * dialog;
     plcmwidget * plcmwi;
     uchar selected_mode , calb_step , selected_cam , CountOfDarkImage;
-    int compare , difference;
+    int /*compare , */difference;
     int cent_1 , cent_2;
 
     short brCalMean;

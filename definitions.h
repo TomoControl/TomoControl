@@ -24,6 +24,7 @@
 
 #define FORMAT_NAME_OF_IMAGE 3 // количество цифр в названии изображения
 #define FULL_TURN 64000  // count of steps for rotation on 360 degrees
+#define DIFFERENT_LIMIT 50
 
 #define NUMBER_OF_AXES 3
 
