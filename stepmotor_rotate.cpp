@@ -36,6 +36,10 @@ void stepmotor_rotate::initialization(QHostAddress Source, QHostAddress Destinat
     make_reset(); //сброс
     List.clear(); // очистка списка
 
+    for (uint i = 0; i < 3; i++) // переменные для калибровки
+    {
+        need_position[i] = 0;
+    }
 
     // read from settings.ini
     /* if (ControllerNumber == 1)
@@ -90,27 +94,27 @@ void stepmotor_rotate::initialization(QHostAddress Source, QHostAddress Destinat
      lastPacket = 1;
      if (calb_axes.a1 == 1)
      {
-         if(MoveStatus && (Position[1] == need_position))
+         if(MoveStatus && (Position[1] == need_position[1]))
          {
-            qDebug() << "calib" << position << need_position;
+            qDebug() << "calib" << position << need_position[1];
             MoveStatus = 0;
             emit continue_move();
          }
      }
      if (calb_axes.a2 == 1)
      {
-         if(MoveStatus && (Position[2] == need_position))
+         if(MoveStatus && (Position[2] == need_position[2]))
          {
-            qDebug() << "compare" << position << need_position;
+            qDebug() << "compare" << position << need_position[2];
             MoveStatus = 0;
             emit continue_move();
          }
      }
      if (calb_axes.a4 == 1)
      {
-         if(MoveStatus && (Position[0] == need_position))
+         if(MoveStatus && (Position[0] == need_position[0]))
          {
-            qDebug() << "calib" << position << need_position;
+            qDebug() << "calib" << position << need_position[0];
             MoveStatus = 0;
             emit continue_move();
          }
@@ -853,21 +857,23 @@ void stepmotor_rotate::stop_movement(Axes_Mask Axes)
 void stepmotor_rotate::calculate_go(int size_of_step, int count)
 {
     MoveStatus = 1;
-    need_position = size_of_step * count;
+    need_position[2] = size_of_step * count;
     Axes_Mask axes;
     axes = reset_axes_mask();
     axes.a2 = 1;
-    qDebug() << "stepmotor_rotate :: emit go" << need_position << position;
-    if (need_position != position) go_to(size_of_step, axes);
+    qDebug() << "stepmotor_rotate :: emit go" << need_position[2] << position;
+    if (need_position[2] != position) go_to(size_of_step, axes);
 }
 
 void stepmotor_rotate::go_to_for_calb(int step,Axes_Mask axes)
 {
     MoveStatus = 1;
-    need_position = 0;
-    if (axes.a1 == 1) {need_position = Position[1] + step; current_position = Position[1];}
-    if (axes.a4 == 1) {need_position = Position[0] + step; current_position = Position[0];}
-    if (need_position != position) go_to(step,axes);
+    need_position[0] = 0;
+    need_position[1] = 0;
+    if (axes.a1 == 1) {need_position[1] = Position[1] + step; /*current_position = Position[1];*/}
+    if (axes.a4 == 1) {need_position[0] = Position[0] + step; /*current_position = Position[0];*/}
+    if ((need_position[0] != position)&& (axes.a4 == 1)) go_to(step,axes);
+    if ((need_position[1] != position)&& (axes.a1 == 1)) go_to(step,axes);
 }
 
 Axes_Mask stepmotor_rotate::reset_axes_mask()

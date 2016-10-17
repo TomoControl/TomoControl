@@ -49,7 +49,7 @@ public:
     uchar error_number, job;
     uchar concev[3];
     int position;
-    int need_position, current_position;
+    int  current_position;
     ushort step_number;
     uchar ControllerNumber;
     uchar direction;
@@ -64,7 +64,7 @@ public:
     uchar numOfAxes;
     uchar AxeOfCalibr_1,AxeOfCalibr_2,AxeOfCalibr_3;
     uchar stats;
-    int calibr[5], max_frequency[3], Lim_R[3], Lim_L[3], Position[3], CountStepOfAxe[3];
+    int calibr[5], max_frequency[3], Lim_R[3], Lim_L[3], Position[3], need_position[3], CountStepOfAxe[3];
     int position_1 , position_2 , position_3 , position_4 , position_5 , position_6;
 
 public slots:

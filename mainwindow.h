@@ -26,6 +26,7 @@
 #include "vivixcam.h"
 #include "cam.h"
 #include "service_functions.h"
+#include <math.h>
 
 
 namespace Ui {
@@ -63,7 +64,7 @@ public:
     float calFactor;
 
     ushort NumberOfCoordinates , NumberOfImage , NumberOfShoot , CountOfShoot, CountOfFrame;
-    ushort * darkData, *frameData, * brCalData;
+    ushort *darkData, *frameData, *brCalData;
 
     int SizeOfStep , CoordinateRotate , Lenght_rotate_axe;
     int AccumulationTime;

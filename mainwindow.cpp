@@ -561,7 +561,6 @@ void MainWindow::onGetData(ushort * tdata)
 
         case 2:
         {
-            calb_step ++;
             qDebug() << "move_solution";
 
             frame->setRAWImage(dData);
@@ -572,7 +571,6 @@ void MainWindow::onGetData(ushort * tdata)
             int j = 1800;
             int pixel = dData[j];
             int pixel_old = dData[j];
-            int tmp = 0;
 
             for (int i = 100; i < IMAGE_WIDTH - 1; i++ )
             {
@@ -597,11 +595,12 @@ void MainWindow::onGetData(ushort * tdata)
 
                 if(left_border * right_border > 0)
                 {
+                    calb_step ++;
                     qDebug() << "left_border*right_border > 0";
                     center = (right_border + left_border) / 2;
                     left_border = 0;
                     right_border = 0;
-                    if (calb_step == 1) {/*compare = center;*/ qDebug() << "compare" << compare; cent_1 = center;}
+                    if (calb_step == 1) { cent_1 = center;}
                     if (calb_step == 2)
                     {
                         cent_2 = center;
@@ -611,6 +610,18 @@ void MainWindow::onGetData(ushort * tdata)
                 }
             }
             delete []dData;
+
+            qDebug() << difference << "dif " << cent_2 << "cent_2";
+            if((abs(difference) < DIFFERENT_LIMIT)&&(cent_2 != 0))
+            {
+                qDebug() << "finish calibration";
+                difference = 0;
+                cent_2 = 0;
+                cent_1 = 0;
+                calb_step = 0;
+                emit finish();
+                return;
+            }
 
             qDebug() << calb_step << "calb_step";
             switch (calb_step)
@@ -648,27 +659,18 @@ void MainWindow::onGetData(ushort * tdata)
                 break;
             }
             default:
-                break;
-            }
-
-            qDebug() << difference << "dif " << cent_2 << "cent_2";
-            if((difference < DIFFERENT_LIMIT)&&(difference > -DIFFERENT_LIMIT)&&(cent_2 != 0))
-            {
-                difference = 0;
-                cent_2 = 0;
-                cent_1 = 0;
-                calb_step = 0;
-                qDebug() << "finish";
-                emit finish();
+                qDebug() << "AcquireImage one more";
+                reciever->AcquireImage();
                 return;
             }
 
-            if((calb_step == 0) && (difference*difference > DIFFERENT_LIMIT*DIFFERENT_LIMIT))
+            if((calb_step == 0) && (abs(difference) > DIFFERENT_LIMIT))
             {
+                qDebug() << "continue";
+                if (abs(difference) < 50) step_size /= 2;
                 difference = 0;
                 cent_1 = 0;
                 cent_2 = 0;
-                //step_size /= 2;
                 qDebug() << "calb diff step_size" << step_size;
                 reciever->AcquireImage();
             }
