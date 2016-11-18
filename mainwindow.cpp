@@ -121,6 +121,14 @@ MainWindow::MainWindow(QWidget *parent) :
     // определение времени работы источника РИ
     connect(rap,SIGNAL(xrayOn()),this,SLOT(set_start_time()));
     connect(rap,SIGNAL(xrayOff()),this,SLOT(set_finish_time()));
+
+    //new Mode
+    ready = 0;
+    NewMode_fg = 0;
+    NewMode_range = 0;
+    NewMode_step = 0;
+    NewMode_size_of_step = 0;
+    NewMode_current_step = 0;
 }
 
 MainWindow::~MainWindow()
@@ -316,7 +324,7 @@ void MainWindow::on_Start_AutoScan_clicked()
         }
         connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
         connect(this, SIGNAL(nextStep(int,int)), stepmotor_1, SLOT(calculate_go(int,int)));
-        connect(stepmotor_1, SIGNAL(continue_move()), reciever, SLOT(AcquireImage()));
+        connect(stepmotor_1, SIGNAL(continue_scan()), reciever, SLOT(AcquireImage()));
         connect(this, SIGNAL(finishAutoScan()), this, SLOT(finish_autoscan()));
         connect(this,SIGNAL(retry_acquire_image()),reciever,SLOT(AcquireImage()));
 
@@ -374,7 +382,7 @@ void MainWindow::finish_autoscan()
     disconnect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
     disconnect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
     disconnect(this, SIGNAL(nextStep(int,int)), stepmotor_1, SLOT(calculate_go(int,int)));
-    disconnect(stepmotor_1, SIGNAL(continue_move()), reciever, SLOT(AcquireImage()));
+    disconnect(stepmotor_1, SIGNAL(continue_scan()), reciever, SLOT(AcquireImage()));
     disconnect(this, SIGNAL(finishAutoScan()), rap, SLOT(off()));
     disconnect(this,SIGNAL(retry_acquire_image()),reciever,SLOT(AcquireImage()));
 
@@ -810,7 +818,7 @@ void MainWindow::source_calibration()
         // установление соединений для автосканирования
         connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
         connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
-        connect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
+        connect(stepmotor_2,SIGNAL(continue_scan()),reciever,SLOT(AcquireImage()));
         connect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
         selected_mode  = 2;
         status = 1;
@@ -839,7 +847,7 @@ void MainWindow::finish_calibration()
     rap->off();
     disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
     disconnect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onCalibrationGetData(ushort *)));
-    disconnect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
+    disconnect(stepmotor_2,SIGNAL(continue_scan()),reciever,SLOT(AcquireImage()));
     disconnect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
     disconnect(rap,SIGNAL(changeI(uint)),this,SLOT(onChangeI(uint)));
     disconnect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
@@ -997,12 +1005,12 @@ void MainWindow::set_finish_time()
 // Source calibraion
 void MainWindow::on_pushButton_2_clicked()
 {
-    if(source_calibration_fg)
+    if(!source_calibration_fg)
     {
         // установление соединений для калибровки
         connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
         connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onCalibrationGetData(ushort *)));
-        connect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
+        connect(stepmotor_2,SIGNAL(continue_scan()),reciever,SLOT(AcquireImage()));
         connect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
         connect(rap,SIGNAL(changeI(uint)),this,SLOT(onChangeI(uint)));
         connect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
@@ -1122,4 +1130,152 @@ void MainWindow::onCalibrationGetData(ushort *tdata)
         central_point[1] = 0;
         difference_between_centals_point = 0;
     }
+}
+
+// new Mode
+void MainWindow::on_pushButton_5_clicked()
+{
+    if(!NewMode_fg)
+    {
+        // установление соединений для нового режима
+        connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
+        connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onNewModeGetData(ushort *)));
+        connect(stepmotor_1,SIGNAL(continue_scan()),this,SLOT(NewMode_continue()));
+        connect(stepmotor_2,SIGNAL(continue_scan()),this,SLOT(NewMode_continue()));
+        connect(this,SIGNAL(finish()),this,SLOT(NewMode_finish()));
+        connect(rap,SIGNAL(changeI(uint)),this,SLOT(onChangeI(uint)));
+        connect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
+
+        // установка времени экспозиции камеры
+        AccumulationTime = ui->Exposure->text().toInt();
+        reciever->SetAccumulationTime(AccumulationTime);
+
+        NewMode_fg = 0;
+        ui->pushButton_5->setText("Stop");
+
+        NewMode_range = ui->NewMode_Range->text().toUInt();
+        NewMode_step = ui->NewMode_Step->text().toInt();
+
+        NewMode_size_of_step = NewMode_range / NewMode_step;
+
+
+        int start_point = 0;
+        Axes_Mask axes;
+        axes = stepmotor_2->reset_axes_mask();
+        axes.a1 = 1;
+
+        start_point = NewMode_range / 2;
+
+        if(ui->radioButton_2->isChecked())
+        {
+            qDebug() << "Right to Left";
+            start_point *= -1;
+
+        }
+
+        if(ui->radioButton_1->isChecked())
+        {
+            qDebug() << "Left to Right";
+            NewMode_size_of_step *= -1;
+        }
+
+        stepmotor_1->go_to_for_calb(start_point,axes);
+        stepmotor_2->go_to_for_calb(start_point,axes);
+        // калибровка, исходные точки TODO
+        //NewMode_get_start_point();
+    }
+    else
+    {
+        // обнуление используемых глобальных переменных
+        NewMode_fg = 0;
+        NewMode_range = 0;
+        NewMode_step = 0;
+        NewMode_size_of_step = 0;
+        NewMode_current_step = 0;
+        ready = 0;
+        ui->pushButton_5->setText("NewMode");
+
+        NewMode_finish();
+    }
+}
+
+// калибровка, исходные точки
+void MainWindow::NewMode_get_start_point()
+{
+    //TODO
+}
+
+void MainWindow::NewMode_start_Xray()
+{
+    // включение источника РИ
+   // rap->on((uchar)ui->U_Auto->text().toShort(), (uchar)ui->I_Auto->text().toShort());
+}
+
+
+// основная логика
+void MainWindow::onNewModeGetData(ushort *tdata)
+{
+    rap->off();
+    NewMode_current_step++;
+    qDebug() << "onNewModeGetData";
+    ushort * dData;
+    dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
+    memcpy(dData, tdata, IMAGE_WIDTH * IMAGE_HEIGHT * 2);
+
+    frame->setRAWImage(dData);
+
+    // сохранение изображений в tiff-формате
+
+    QString NameForSaveImage;
+    NameForSaveImage = service_functions::RenameOfImages(NewMode_current_step - 1);
+    QString file = FileDirectory + NameForSaveImage;
+    tiff->WriteTIFF(file.toStdString(), dData, IMAGE_WIDTH, IMAGE_HEIGHT, 0, 1., 16);
+
+    // проверка завершения
+    if (NewMode_current_step > NewMode_step)
+    {
+        NewMode_finish();
+        return;
+    }
+
+    // запуск перемещений
+    Axes_Mask axes;
+    axes = stepmotor_2->reset_axes_mask();
+    axes.a1 = 1;
+
+    stepmotor_1->go_to_for_calb(NewMode_size_of_step,axes);
+    stepmotor_2->go_to_for_calb(NewMode_size_of_step,axes);
+}
+
+// завершение перемещения источника и приемника
+void MainWindow::NewMode_continue()
+{
+    ready++;
+    if(ready == 2)
+    {
+        ready = 0;
+        rap->on((uchar)ui->U_Auto->text().toShort(), (uchar)ui->I_Auto->text().toShort());
+//        if(!rap->xrayStatus) // ?? если рентген выключен
+//        {
+//            NewMode_start_Xray();
+//        }
+//        else
+//        {
+//            reciever->AcquireImage();
+//        }
+    }
+}
+
+void MainWindow::NewMode_finish()
+{
+    if(rap->xrayStatus)rap->off();
+
+    // разрыв соединений для нового режима
+    disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
+    disconnect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onNewModeGetData(ushort *)));
+    disconnect(stepmotor_1,SIGNAL(continue_scan()),this,SLOT(NewMode_continue()));
+    disconnect(stepmotor_2,SIGNAL(continue_scan()),this,SLOT(NewMode_continue()));
+    disconnect(this,SIGNAL(finish()),this,SLOT(NewMode_finish()));
+    disconnect(rap,SIGNAL(changeI(uint)),this,SLOT(onChangeI(uint)));
+    disconnect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
 }

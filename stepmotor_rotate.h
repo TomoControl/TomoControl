@@ -81,7 +81,7 @@ public slots:
 
 
 signals:
-    void continue_move();
+    void continue_scan();
     void start_xray();
     void runningChanged(bool running); // thread
     void finished(); // thread

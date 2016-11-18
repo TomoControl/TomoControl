@@ -94,7 +94,7 @@ void stepmotor_rotate::initialization(QHostAddress Source, QHostAddress Destinat
          {
             qDebug() << "calib" << position << need_position;
             MoveStatus = 0;
-            if(job == 0) emit continue_move();
+            if(job == 0) emit continue_scan();
          }
      }
      if (calb_axes.a2 == 1)
@@ -103,7 +103,7 @@ void stepmotor_rotate::initialization(QHostAddress Source, QHostAddress Destinat
          {
             qDebug() << "compare" << position << need_position;
             MoveStatus = 0;
-            emit continue_move();
+            emit continue_scan();
          }
      }
      if (calb_axes.a4 == 1)
@@ -112,7 +112,7 @@ void stepmotor_rotate::initialization(QHostAddress Source, QHostAddress Destinat
          {
             qDebug() << "calib" << position << need_position;
             MoveStatus = 0;
-            if(job == 0) emit continue_move();
+            if(job == 0) emit continue_scan();
          }
      }
 

@@ -83,6 +83,14 @@ public:
     uchar source_calibration_step;
     int difference_between_centals_point;
 
+    //new Mode
+    bool NewMode_fg;
+    uchar ready;
+    uint NewMode_range;
+    int NewMode_step;
+    int NewMode_size_of_step;
+    ushort NewMode_current_step;
+
 
 signals:
     void getImage();
@@ -140,6 +148,14 @@ private slots:
     void SetUIData();
 
     void onCalibrationGetData(ushort * tdata);
+
+    // new Mode
+    void onNewModeGetData(ushort * tdata);
+    void NewMode_continue();
+    void NewMode_get_start_point();
+    void NewMode_start_Xray();
+    void NewMode_finish();
+    void on_pushButton_5_clicked();
 
 private:
     Ui::MainWindow *ui;
