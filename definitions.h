@@ -33,5 +33,9 @@
 
 #define THRESHOLD 200 // порог определения тест-объекта при калибровке источника
 
+#define DIFFERENCE_LIMIT 10
+
+#define STEP_SIZE 5000
+
 #endif // DEFINITIONS
 

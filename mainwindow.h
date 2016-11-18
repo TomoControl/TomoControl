@@ -78,6 +78,11 @@ public:
     QTime start_time, finish_time;
     uchar waste;
 
+    bool source_calibration_fg;
+    int central_point[2];
+    uchar source_calibration_step;
+    int difference_between_centals_point;
+
 
 signals:
     void getImage();
@@ -133,6 +138,8 @@ private slots:
     void MakeDarkImage();
     void MakeConfig();
     void SetUIData();
+
+    void onCalibrationGetData(ushort * tdata);
 
 private:
     Ui::MainWindow *ui;

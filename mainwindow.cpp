@@ -21,6 +21,12 @@ MainWindow::MainWindow(QWidget *parent) :
     cent_2 = 0;
     enable_continue = true;
 
+    source_calibration_fg = 0;
+    source_calibration_step = 0;
+    central_point[0] = 0;
+    central_point[1] = 0;
+    difference_between_centals_point = 0;
+
     QImage image(IMAGE_WIDTH, IMAGE_HEIGHT, QImage::Format_Indexed8);
     rxImage = image;
 
@@ -832,21 +838,20 @@ void MainWindow::finish_calibration()
 {
     rap->off();
     disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
-    disconnect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
+    disconnect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onCalibrationGetData(ushort *)));
     disconnect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
     disconnect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
+    disconnect(rap,SIGNAL(changeI(uint)),this,SLOT(onChangeI(uint)));
+    disconnect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
 
     // выключение источника, сброс индикации
     status = 0;
-    ui->pushButton_3->setText("Start");
-    selected_mode = 0;
+    ui->pushButton_2->setText("Start");
+    //selected_mode = 0;
 }
 
 
-void MainWindow::on_pushButton_2_clicked()
-{
-    rap->on((uchar)ui->U_Auto->text().toShort(), (uchar)ui->I_Auto->text().toShort());
-}
+
 
 void MainWindow::on_pushButton_3_clicked()
 {
@@ -987,4 +992,134 @@ void MainWindow::set_finish_time()
 {
     finish_time = QTime::currentTime();
     save_rap_working_time();
+}
+
+// Source calibraion
+void MainWindow::on_pushButton_2_clicked()
+{
+    if(source_calibration_fg)
+    {
+        // установление соединений для калибровки
+        connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
+        connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onCalibrationGetData(ushort *)));
+        connect(stepmotor_2,SIGNAL(continue_move()),reciever,SLOT(AcquireImage()));
+        connect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
+        connect(rap,SIGNAL(changeI(uint)),this,SLOT(onChangeI(uint)));
+        connect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
+
+        source_calibration_fg = 1;
+        ui->pushButton_2->setText("Stop");
+
+        // установка времени экспозиции камеры
+        AccumulationTime = ui->Exposure->text().toInt();
+        reciever->SetAccumulationTime(AccumulationTime);
+
+        // включение источника РИ
+        rap->on((uchar)ui->U_Auto->text().toShort(), (uchar)ui->I_Auto->text().toShort());
+    }
+    else
+    {
+        // обнуление используемых глобальных переменных
+        source_calibration_fg = 0;
+        source_calibration_step = 0;
+        central_point[0] = 0;
+        central_point[1] = 0;
+        difference_between_centals_point = 0;
+
+        finish_calibration();
+    }
+}
+
+void MainWindow::onCalibrationGetData(ushort *tdata)
+{
+    qDebug() << "OnCalibrationGetData";
+    ushort * dData;
+    dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
+    memcpy(dData, tdata, IMAGE_WIDTH * IMAGE_HEIGHT * 2);
+
+    frame->setRAWImage(dData);
+
+    source_calibration_step ++;
+
+    int j = 1800;
+    int pixel = dData[j];
+    int pixel_old = 0;
+    int left_limit = 0;
+    int right_limit = 0;
+    int step_flag_1 = 0;
+    //bool step_flag_2 = 0;
+
+    for(int i = 0; i < IMAGE_HEIGHT - 1; i++)
+    {
+        pixel_old = pixel;
+        pixel = dData[i * IMAGE_WIDTH + j];
+
+        // Определение левой границы
+        if(((pixel_old - pixel) > THRESHOLD) && (step_flag_1 == 0))
+        {
+             right_limit = i;
+             step_flag_1 = 1;
+             qDebug() << "right_limit" << right_limit;
+        }
+
+        // Определение правой границы
+        if(((pixel - pixel_old) > THRESHOLD) && (step_flag_1 > 0))
+        {
+             left_limit = i;
+             step_flag_1 = 2;
+             qDebug() << "left_limit" << left_limit;
+        }
+
+        // Определение центра изображения
+        if((step_flag_1 > 1)&&(source_calibration_step==2))
+        {
+            qDebug() << QString("step of calibration = %1").arg(source_calibration_step);
+            central_point[source_calibration_step - 1] = (right_limit - left_limit) / 2;
+            difference_between_centals_point = central_point[1] - central_point[0];
+        }
+    }
+    delete[] dData;
+
+    // Проверка окончания работы калибровки
+    if(abs(difference_between_centals_point < DIFFERENCE_LIMIT))
+    {
+        emit finish();
+        return;
+    }
+
+    // перемещение источника
+    int step;
+    Axes_Mask axes;
+    axes = stepmotor_2->reset_axes_mask();
+    axes.a4 = 1;
+    step = 10000;
+    if(source_calibration_step == 2) step *= -1;
+    stepmotor_2->go_to_for_calb(step,axes);
+
+    // перемещение источника в сторону (вправо)
+    if (difference_between_centals_point < 0)
+    {
+        axes = stepmotor_2->reset_axes_mask();
+        axes.a1 = 1;
+        stepmotor_2->go_to_for_calb(STEP_SIZE,axes);
+        qDebug() << "move to right";
+    }
+
+    // перемещение источника в сторону (влево)
+    if (difference_between_centals_point > 0)
+    {
+        axes = stepmotor_2->reset_axes_mask();
+        axes.a1 = 1;
+        stepmotor_2->go_to_for_calb(-1*STEP_SIZE,axes);
+        qDebug() << "move to left";
+    }
+
+    if(source_calibration_step == 2)
+    {
+        source_calibration_fg = 0;
+        source_calibration_step = 0;
+        central_point[0] = 0;
+        central_point[1] = 0;
+        difference_between_centals_point = 0;
+    }
 }
