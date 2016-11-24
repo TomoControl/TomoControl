@@ -1103,10 +1103,10 @@ void MainWindow::onCalibrationGetData(ushort *tdata)
             switch (source_calibration_step)
             {
             case 1:
-                central_point[0] = (right_limit - left_limit) / 2;
+                central_point[0] = -1*(right_limit - left_limit) / 2;
                 break;
             case 2:
-                central_point[1] = (right_limit - left_limit) / 2;
+                central_point[1] = -1*(right_limit - left_limit) / 2;
                 difference_between_centals_point = central_point[1] - central_point[0];
                 qDebug() << QString("step of calibration = %1").arg(source_calibration_step) << difference_between_centals_point;
                 break;
@@ -1140,7 +1140,7 @@ void MainWindow::onCalibrationGetData(ushort *tdata)
     {
         axes = stepmotor_2->reset_axes_mask();
         axes.a1 = 1;
-        stepmotor_2->go_to_for_calb(STEP_SIZE,axes);
+        stepmotor_2->go_to_for_calb(-1*STEP_SIZE,axes);
         qDebug() << "move to right" << difference_between_centals_point << central_point[1] << central_point[0];
     }
 
@@ -1149,7 +1149,7 @@ void MainWindow::onCalibrationGetData(ushort *tdata)
     {
         axes = stepmotor_2->reset_axes_mask();
         axes.a1 = 1;
-        stepmotor_2->go_to_for_calb(-1*STEP_SIZE,axes);
+        stepmotor_2->go_to_for_calb(STEP_SIZE,axes);
         qDebug() << "move to left" << difference_between_centals_point << central_point[1] << central_point[0];
     }
 
