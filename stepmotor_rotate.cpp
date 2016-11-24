@@ -90,11 +90,13 @@ void stepmotor_rotate::initialization(QHostAddress Source, QHostAddress Destinat
      lastPacket = 1;
      if (calb_axes.a1 == 1)
      {
-         if(MoveStatus && (Position[1] == need_position))
+
+         if(MoveStatus && (abs(Position[1] - need_position) < 3))
          {
+            qDebug() << "calb axes a 1" << Position[1] << need_position;
             qDebug() << "calib" << position << need_position;
             MoveStatus = 0;
-            if(job == 0) emit continue_scan();
+            /*if(job == 0)*/ emit continue_scan();
          }
      }
      if (calb_axes.a2 == 1)
@@ -865,8 +867,8 @@ void stepmotor_rotate::go_to_for_calb(int step,Axes_Mask axes)
 {
     MoveStatus = 1;
     need_position = 0;
-    if (axes.a1 == 1) {need_position = Position[1] + step; current_position = Position[1];}
-    if (axes.a4 == 1) {need_position = Position[0] + step; current_position = Position[0];}
+    if (axes.a1 == 1) {need_position = Position[1] + step; current_position = Position[1]; qDebug() << "need 1" << need_position << current_position;}
+    if (axes.a4 == 1) {need_position = Position[0] + step; current_position = Position[0]; qDebug() << "need 0" << need_position << current_position;}
     if (need_position != position) go_to(step,axes);
 }
 

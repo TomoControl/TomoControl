@@ -819,7 +819,7 @@ void MainWindow::source_calibration()
         connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
         connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
         connect(stepmotor_2,SIGNAL(continue_scan()),reciever,SLOT(AcquireImage()));
-        connect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
+                connect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
         selected_mode  = 2;
         status = 1;
 
@@ -829,7 +829,8 @@ void MainWindow::source_calibration()
         AccumulationTime = ui->Exposure->text().toInt();
         reciever->SetAccumulationTime(AccumulationTime);
         // включение источника РИ
-        rap->on((uchar)ui->U_Auto->text().toShort(), (uchar)ui->I_Auto->text().toShort());
+//        rap->on((uchar)ui->U_Auto->text().toShort(), (uchar)ui->I_Auto->text().toShort());
+        xray();
     }
     else
     {
@@ -848,6 +849,8 @@ void MainWindow::finish_calibration()
     disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
     disconnect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onCalibrationGetData(ushort *)));
     disconnect(stepmotor_2,SIGNAL(continue_scan()),reciever,SLOT(AcquireImage()));
+    disconnect(stepmotor_2,SIGNAL(continue_scan()),this,SLOT(xray()));
+
     disconnect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
     disconnect(rap,SIGNAL(changeI(uint)),this,SLOT(onChangeI(uint)));
     disconnect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
@@ -1010,10 +1013,11 @@ void MainWindow::on_pushButton_2_clicked()
         // установление соединений для калибровки
         connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
         connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onCalibrationGetData(ushort *)));
-        connect(stepmotor_2,SIGNAL(continue_scan()),reciever,SLOT(AcquireImage()));
+//        connect(stepmotor_2,SIGNAL(continue_scan()),reciever,SLOT(AcquireImage()));
         connect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
         connect(rap,SIGNAL(changeI(uint)),this,SLOT(onChangeI(uint)));
         connect(rap,SIGNAL(changeU(uint)),this,SLOT(onChangeU(uint)));
+        connect(stepmotor_2,SIGNAL(continue_scan()),this,SLOT(xray()));
 
         source_calibration_fg = 1;
         ui->pushButton_2->setText("Stop");
@@ -1040,6 +1044,7 @@ void MainWindow::on_pushButton_2_clicked()
 
 void MainWindow::onCalibrationGetData(ushort *tdata)
 {
+    rap->off();
     qDebug() << "OnCalibrationGetData";
     ushort * dData;
     dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
@@ -1049,7 +1054,7 @@ void MainWindow::onCalibrationGetData(ushort *tdata)
 
     source_calibration_step ++;
 
-    int j = 1800;
+    int j = 1900;
     int pixel = dData[j];
     int pixel_old = 0;
     int left_limit = 0;
@@ -1062,6 +1067,16 @@ void MainWindow::onCalibrationGetData(ushort *tdata)
         pixel_old = pixel;
         pixel = dData[i * IMAGE_WIDTH + j];
 
+//        if((pixel_old - pixel) > THRESHOLD)
+//        {
+//                qDebug() << "right" << pixel_old - pixel << "i" << i;
+//        }
+
+//        if((pixel - pixel_old) > THRESHOLD)
+//        {
+//                qDebug() << "left" << pixel - pixel_old << "i" << i;
+//        }
+
         // Определение левой границы
         if(((pixel_old - pixel) > THRESHOLD) && (step_flag_1 == 0))
         {
@@ -1071,26 +1086,31 @@ void MainWindow::onCalibrationGetData(ushort *tdata)
         }
 
         // Определение правой границы
-        if(((pixel - pixel_old) > THRESHOLD) && (step_flag_1 > 0))
+        if(((pixel - pixel_old) > THRESHOLD) && (step_flag_1 == 1))
         {
              left_limit = i;
              step_flag_1 = 2;
              qDebug() << "left_limit" << left_limit;
         }
 
+        // переделать
         // Определение центра изображения
-        if((step_flag_1 > 1)&&(source_calibration_step==2))
+        if((step_flag_1 == 2)&&(source_calibration_step == 2))
         {
-            qDebug() << QString("step of calibration = %1").arg(source_calibration_step);
-            central_point[source_calibration_step - 1] = (right_limit - left_limit) / 2;
+            step_flag_1 = 0;
+            central_point[0] = (right_limit - left_limit) / 2;
+            central_point[1] = (right_limit - left_limit) / 2;
             difference_between_centals_point = central_point[1] - central_point[0];
+            qDebug() << QString("step of calibration = %1").arg(source_calibration_step) << difference_between_centals_point;
         }
     }
     delete[] dData;
 
+    // баг - ищначально разница = 0 < предела!
     // Проверка окончания работы калибровки
-    if(abs(difference_between_centals_point < DIFFERENCE_LIMIT))
+    if(abs(difference_between_centals_point) < DIFFERENCE_LIMIT && (central_point[1] != 0) && (source_calibration_step == 2))
     {
+        qDebug () << "finish_calibration";
         emit finish();
         return;
     }
@@ -1110,7 +1130,7 @@ void MainWindow::onCalibrationGetData(ushort *tdata)
         axes = stepmotor_2->reset_axes_mask();
         axes.a1 = 1;
         stepmotor_2->go_to_for_calb(STEP_SIZE,axes);
-        qDebug() << "move to right";
+        qDebug() << "move to right" << difference_between_centals_point << central_point[1] << central_point[0];
     }
 
     // перемещение источника в сторону (влево)
@@ -1119,7 +1139,7 @@ void MainWindow::onCalibrationGetData(ushort *tdata)
         axes = stepmotor_2->reset_axes_mask();
         axes.a1 = 1;
         stepmotor_2->go_to_for_calb(-1*STEP_SIZE,axes);
-        qDebug() << "move to left";
+        qDebug() << "move to left" << difference_between_centals_point << central_point[1] << central_point[0];
     }
 
     if(source_calibration_step == 2)
@@ -1173,7 +1193,7 @@ void MainWindow::on_pushButton_5_clicked()
 
         }
 
-        if(ui->radioButton_1->isChecked())
+        if(ui->radioButton->isChecked())
         {
             qDebug() << "Left to Right";
             NewMode_size_of_step *= -1;

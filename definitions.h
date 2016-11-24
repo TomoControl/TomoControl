@@ -31,7 +31,7 @@
 
 #define NUMBER_OF_DARK_IMAGE 0
 
-#define THRESHOLD 200 // порог определения тест-объекта при калибровке источника
+#define THRESHOLD 150 // порог определения тест-объекта при калибровке источника
 
 #define DIFFERENCE_LIMIT 10
 
