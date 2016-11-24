@@ -23,6 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
 
     source_calibration_fg = 0;
     source_calibration_step = 0;
+    counter_of_central_points = 0;
     central_point[0] = 0;
     central_point[1] = 0;
     difference_between_centals_point = 0;
@@ -819,7 +820,7 @@ void MainWindow::source_calibration()
         connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
         connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onGetData(ushort *)));
         connect(stepmotor_2,SIGNAL(continue_scan()),reciever,SLOT(AcquireImage()));
-                connect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
+        connect(this,SIGNAL(finish()),this,SLOT(finish_calibration()));
         selected_mode  = 2;
         status = 1;
 
@@ -1095,18 +1096,28 @@ void MainWindow::onCalibrationGetData(ushort *tdata)
 
         // переделать
         // Определение центра изображения
-        if((step_flag_1 == 2)&&(source_calibration_step == 2))
+        if((step_flag_1 == 2)/*&&(source_calibration_step == 2)*/)
         {
             step_flag_1 = 0;
-            central_point[0] = (right_limit - left_limit) / 2;
-            central_point[1] = (right_limit - left_limit) / 2;
-            difference_between_centals_point = central_point[1] - central_point[0];
-            qDebug() << QString("step of calibration = %1").arg(source_calibration_step) << difference_between_centals_point;
+
+            switch (source_calibration_step)
+            {
+            case 1:
+                central_point[0] = (right_limit - left_limit) / 2;
+                break;
+            case 2:
+                central_point[1] = (right_limit - left_limit) / 2;
+                difference_between_centals_point = central_point[1] - central_point[0];
+                qDebug() << QString("step of calibration = %1").arg(source_calibration_step) << difference_between_centals_point;
+                break;
+            default:
+                break;
+            }
+
         }
     }
     delete[] dData;
 
-    // баг - ищначально разница = 0 < предела!
     // Проверка окончания работы калибровки
     if(abs(difference_between_centals_point) < DIFFERENCE_LIMIT && (central_point[1] != 0) && (source_calibration_step == 2))
     {

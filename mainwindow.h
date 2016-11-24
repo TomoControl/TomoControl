@@ -80,7 +80,7 @@ public:
 
     bool source_calibration_fg;
     int central_point[2];
-    uchar source_calibration_step;
+    uchar source_calibration_step, counter_of_central_points;
     int difference_between_centals_point;
 
     //new Mode
