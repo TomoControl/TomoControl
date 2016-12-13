@@ -90,6 +90,7 @@ public:
     int NewMode_step;
     int NewMode_size_of_step;
     ushort NewMode_current_step;
+    ushort *addition_data;
 
 
 signals:

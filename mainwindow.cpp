@@ -1168,6 +1168,8 @@ void MainWindow::on_pushButton_5_clicked()
 {
     if(!NewMode_fg)
     {
+         addition_data = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
+
         // установление соединений для нового режима
         connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
         connect(reciever, SIGNAL(GetDataComplete(ushort*)), this, SLOT(onNewModeGetData(ushort *)));
@@ -1211,7 +1213,7 @@ void MainWindow::on_pushButton_5_clicked()
         }
 
         stepmotor_1->go_to_for_calb(start_point,axes);
-        stepmotor_2->go_to_for_calb(start_point,axes);
+        stepmotor_2->go_to_for_calb(-start_point,axes); // противоположная сторона TODO
         // калибровка, исходные точки TODO
         //NewMode_get_start_point();
     }
@@ -1225,6 +1227,7 @@ void MainWindow::on_pushButton_5_clicked()
         NewMode_current_step = 0;
         ready = 0;
         ui->pushButton_5->setText("NewMode");
+
 
         NewMode_finish();
     }
@@ -1253,6 +1256,19 @@ void MainWindow::onNewModeGetData(ushort *tdata)
     dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
     memcpy(dData, tdata, IMAGE_WIDTH * IMAGE_HEIGHT * 2);
 
+
+    //TODO суммирование снимков
+    addition_data += dData;
+    addition_data /= 2;
+//    for (int k = 0; k < IMAGE_HEIGHT - 1; k++)
+//    {
+//        for (int j = 0; j < IMAGE_WIDTH - 1; j++)
+//        {
+//            addition_data[(k * IMAGE_WIDTH)+j] += dData[(k * IMAGE_WIDTH)+j];
+//            addition_data /= 2;
+//        }
+//    }
+
     frame->setRAWImage(dData);
 
     // сохранение изображений в tiff-формате
@@ -1275,7 +1291,7 @@ void MainWindow::onNewModeGetData(ushort *tdata)
     axes.a1 = 1;
 
     stepmotor_1->go_to_for_calb(NewMode_size_of_step,axes);
-    stepmotor_2->go_to_for_calb(NewMode_size_of_step,axes);
+    stepmotor_2->go_to_for_calb(-NewMode_size_of_step,axes); // TODO проверить
 }
 
 // завершение перемещения источника и приемника
@@ -1300,6 +1316,13 @@ void MainWindow::NewMode_continue()
 void MainWindow::NewMode_finish()
 {
     if(rap->xrayStatus)rap->off();
+
+    QString NameForSaveImage;
+    NameForSaveImage = "addition_data";
+    QString file = FileDirectory + NameForSaveImage;
+    tiff->WriteTIFF(file.toStdString(), addition_data, IMAGE_WIDTH, IMAGE_HEIGHT, 0, 1., 16);
+
+    delete[] addition_data;
 
     // разрыв соединений для нового режима
     disconnect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));

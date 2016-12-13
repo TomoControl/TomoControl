@@ -219,38 +219,63 @@ struct Velocity_factor
 
 
 // порты ввода-вывода
-#pragma pack(push, 1)
+//#pragma pack(push, 1)
 struct InOutPorts
 {
     ushort size;
     uchar Ncmd;
     uchar Seq_Number;
-    ushort empt_1;
-    ushort empt_2;
-    ushort empt_3;
-    ushort empt_4;
-    ushort empt_5;
-    ushort empt_6;
-    ushort empt_7;
-    ushort empt_8;
-    ushort empt_9;
-    ushort empt_10;
-    ushort empt_11;
-    ushort empt_12;
-    ushort empt_13;
-    ushort empt_14;
-    ushort empt_15;
-    ushort empt_16;
-    ushort empt_17;
-    ushort empt_18;
-    ushort empt_19;
-    ushort empt_20;
-    ushort empt_21;
-    ushort empt_22;
-    ushort empt_23;
+    uchar empt_1;
+    uchar empt_2;
+    uchar empt_3;
+    uchar empt_4;
+    uchar empt_5;
+    uchar empt_6;
+    uchar empt_7;
+    uchar empt_8;
+    uchar empt_9;
+    uchar empt_10;
+    uchar empt_11;
+    uchar empt_12;
+    uchar empt_13;
+    uchar empt_14;
+    uchar empt_15;
+    uchar empt_16;
+    uchar empt_17;
+    uchar empt_18;
+    uchar empt_19;
+    uchar empt_20;
+    uchar empt_21;
+    uchar empt_22;
+    uchar empt_23;
+    uchar empt_24;
+    uchar empt_25;
+    uchar empt_26;
+    uchar empt_27;
+    uchar empt_28;
+    uchar empt_29;
+    uchar empt_30;
+    uchar empt_31;
+    uchar empt_32;
+    uchar empt_33;
+    uchar empt_34;
+    uchar empt_35;
+    uchar empt_36;
+    uchar empt_37;
+    uchar empt_38;
+    uchar empt_39;
+    uchar empt_40;
+    uchar empt_41;
+    uchar empt_42;
+    uchar empt_43;
+    uchar empt_44;
+    uchar empt_45;
+    uchar empt_46;
+    uchar empt_47;
+    uchar empt_48;
     ushort crc;
 };
-#pragma pack(pop)
+//#pragma pack(pop)
 
 // структура для отображения текущей позиции
 struct show_current_position
