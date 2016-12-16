@@ -102,14 +102,14 @@ MainWindow::MainWindow(QWidget *parent) :
     QObject::connect(Timer , SIGNAL(timeout()) , this, SLOT(myTimer()));
     Timer->start(200);
 
-    ui->Start_AutoScan->setDisabled(true);
-    ui->handle->setDisabled(true);
-    ui->TimeCorrect->setDisabled(true);
-    ui->Exposure->setDisabled(true);
-    ui->Compare->setDisabled(true);
-    ui->I_Auto->setDisabled(true);
-    ui->U_Auto->setDisabled(true);
-    ui->NumberOfSteps->setDisabled(true);
+//    ui->Start_AutoScan->setDisabled(true);
+//    ui->handle->setDisabled(true);
+//    ui->TimeCorrect->setDisabled(true);
+//    ui->Exposure->setDisabled(true);
+//    ui->Compare->setDisabled(true);
+//    ui->I_Auto->setDisabled(true);
+//    ui->U_Auto->setDisabled(true);
+//    ui->NumberOfSteps->setDisabled(true);
 
     // инициализация источника РИ
     rap = new RAPEltechMED;
@@ -1168,7 +1168,7 @@ void MainWindow::on_pushButton_5_clicked()
 {
     if(!NewMode_fg)
     {
-         addition_data = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
+        addition_data = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
 
         // установление соединений для нового режима
         connect(rap, SIGNAL(xrayFound()), reciever, SLOT(AcquireImage()));
@@ -1190,12 +1190,13 @@ void MainWindow::on_pushButton_5_clicked()
         NewMode_step = ui->NewMode_Step->text().toInt();
 
         NewMode_size_of_step = NewMode_range / NewMode_step;
+        qDebug() << "NewMode_size_of_step" << NewMode_size_of_step;
 
 
         int start_point = 0;
         Axes_Mask axes;
         axes = stepmotor_2->reset_axes_mask();
-        axes.a1 = 1;
+        axes.a2 = 1;
 
         start_point = NewMode_range / 2;
 
@@ -1228,7 +1229,6 @@ void MainWindow::on_pushButton_5_clicked()
         ready = 0;
         ui->pushButton_5->setText("NewMode");
 
-
         NewMode_finish();
     }
 }
@@ -1252,22 +1252,22 @@ void MainWindow::onNewModeGetData(ushort *tdata)
     rap->off();
     NewMode_current_step++;
     qDebug() << "onNewModeGetData";
+    ui->current_step->setText(QString::number(NewMode_current_step));
     ushort * dData;
     dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
     memcpy(dData, tdata, IMAGE_WIDTH * IMAGE_HEIGHT * 2);
 
 
     //TODO суммирование снимков
-    addition_data += dData;
-    addition_data /= 2;
-//    for (int k = 0; k < IMAGE_HEIGHT - 1; k++)
-//    {
-//        for (int j = 0; j < IMAGE_WIDTH - 1; j++)
-//        {
-//            addition_data[(k * IMAGE_WIDTH)+j] += dData[(k * IMAGE_WIDTH)+j];
-//            addition_data /= 2;
-//        }
-//    }
+
+    for (int k = 0; k < IMAGE_HEIGHT - 1; k++)
+    {
+        for (int j = 0; j < IMAGE_WIDTH - 1; j++)
+        {
+            addition_data[(k * IMAGE_WIDTH)+j] += dData[(k * IMAGE_WIDTH)+j];
+            addition_data[(k * IMAGE_WIDTH)+j] /= 2;
+        }
+    }
 
     frame->setRAWImage(dData);
 
@@ -1281,6 +1281,13 @@ void MainWindow::onNewModeGetData(ushort *tdata)
     // проверка завершения
     if (NewMode_current_step > NewMode_step)
     {
+//        Axes_Mask axes;
+//        axes = stepmotor_2->reset_axes_mask();
+//        axes.a2 = 1;
+
+//        stepmotor_1->go_to_for_calb(-NewMode_range/2 ,axes);
+//        stepmotor_2->go_to_for_calb(NewMode_range/2 ,axes); // TODO проверить
+
         NewMode_finish();
         return;
     }
@@ -1288,7 +1295,7 @@ void MainWindow::onNewModeGetData(ushort *tdata)
     // запуск перемещений
     Axes_Mask axes;
     axes = stepmotor_2->reset_axes_mask();
-    axes.a1 = 1;
+    axes.a2 = 1;
 
     stepmotor_1->go_to_for_calb(NewMode_size_of_step,axes);
     stepmotor_2->go_to_for_calb(-NewMode_size_of_step,axes); // TODO проверить
@@ -1297,19 +1304,16 @@ void MainWindow::onNewModeGetData(ushort *tdata)
 // завершение перемещения источника и приемника
 void MainWindow::NewMode_continue()
 {
+
     ready++;
     if(ready == 2)
     {
+          qDebug() << "go go go";
+//        ushort * dData;
+//        dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
+//        onNewModeGetData(dData);
         ready = 0;
         rap->on((uchar)ui->U_Auto->text().toShort(), (uchar)ui->I_Auto->text().toShort());
-//        if(!rap->xrayStatus) // ?? если рентген выключен
-//        {
-//            NewMode_start_Xray();
-//        }
-//        else
-//        {
-//            reciever->AcquireImage();
-//        }
     }
 }
 
@@ -1318,7 +1322,7 @@ void MainWindow::NewMode_finish()
     if(rap->xrayStatus)rap->off();
 
     QString NameForSaveImage;
-    NameForSaveImage = "addition_data";
+    NameForSaveImage = service_functions::RenameOfImages(111);
     QString file = FileDirectory + NameForSaveImage;
     tiff->WriteTIFF(file.toStdString(), addition_data, IMAGE_WIDTH, IMAGE_HEIGHT, 0, 1., 16);
 

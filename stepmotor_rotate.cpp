@@ -88,29 +88,29 @@ void stepmotor_rotate::initialization(QHostAddress Source, QHostAddress Destinat
  void stepmotor_rotate::myPacketTimer()
  {
      lastPacket = 1;
-     if (calb_axes.a1 == 1)
+     if (calb_axes.a2 == 1)
      {
 
          if(MoveStatus && (abs(Position[1] - need_position) < 3))
          {
-            qDebug() << "calb axes a 1" << Position[1] << need_position;
+            qDebug() << "calb axes a 2" << Position[1] << need_position;
             qDebug() << "calib" << position << need_position;
             MoveStatus = 0;
             /*if(job == 0)*/ emit continue_scan();
          }
      }
-     if (calb_axes.a2 == 1)
+     if (calb_axes.a1 == 1)
      {
-         if(MoveStatus && (Position[2] == need_position))
+         if(MoveStatus && (Position[0] == need_position))
          {
             qDebug() << "compare" << position << need_position;
             MoveStatus = 0;
             emit continue_scan();
          }
      }
-     if (calb_axes.a4 == 1)
+     if (calb_axes.a3 == 1)
      {
-         if(MoveStatus && (Position[0] == need_position))
+         if(MoveStatus && (Position[2] == need_position))
          {
             qDebug() << "calib" << position << need_position;
             MoveStatus = 0;
@@ -176,15 +176,15 @@ void stepmotor_rotate::onClientReadyRead() // чтение пришедшего 
     position_4 = status->Position_3;
     position_5 = status->Position_4;
     position_6 = status->Position_5;
-    Position[0] = status->Position_3;
-    Position[1] = status->Position_0;
-    Position[2] = status->Position_1;
+    Position[0] = status->Position_0;
+    Position[1] = status->Position_1;
+    Position[2] = status->Position_2;
 
     // статус драйвера
     job = status->Job;
 
     // определение текущих координат
-    position = status->Position_1;
+    position = status->Position_0;
 
     // индикация ошибки
     error_number = status->ErrCode;
@@ -231,9 +231,9 @@ limits_position stepmotor_rotate::get_limits()
 show_current_position stepmotor_rotate::get_current_position()
 {
     show_current_position pos;
-    pos.Position_1 = Position[2];
+    pos.Position_1 = Position[0];
     pos.Position_2 = Position[1];
-    pos.Position_3 = Position[0];
+    pos.Position_3 = Position[2];
     return pos;
 }
 
@@ -764,7 +764,7 @@ void stepmotor_rotate::setting_in_out_ports()  // TODO new axes
     command.empt_15 = 0x8a;
     command.empt_16 = 0x8b;
     command.empt_17 = 0x8c;
-    command.empt_18 = 0x8e;
+    command.empt_18 = 0xff;
     command.empt_19 = 0xff;
     command.empt_20 = 0xff;
     command.empt_21 = 0xff;
@@ -784,13 +784,13 @@ void stepmotor_rotate::setting_in_out_ports()  // TODO new axes
     command.empt_35 = 0x01;
     command.empt_36 = 0x02;
     command.empt_37 = 0x03;
-    command.empt_38 = 0x04;
+    command.empt_38 = 0xff;
     command.empt_39 = 0xff;
     command.empt_40 = 0xff;
     command.empt_41 = 0x85;
     command.empt_42 = 0x86;
     command.empt_43 = 0x87;
-    command.empt_44 = 0x88;
+    command.empt_44 = 0xff;
     command.empt_45 = 0xff;
     command.empt_46 = 0xff;
     command.empt_47 = 0x0d;
@@ -883,17 +883,18 @@ void stepmotor_rotate::calculate_go(int size_of_step, int count)
     need_position = size_of_step * count;
     Axes_Mask axes;
     axes = reset_axes_mask();
-    axes.a2 = 1;
+    axes.a1 = 1;
     qDebug() << "stepmotor_rotate :: emit go" << need_position << position;
     if (need_position != position) go_to(size_of_step, axes);
 }
 
 void stepmotor_rotate::go_to_for_calb(int step,Axes_Mask axes)
 {
+    qDebug() << "rrr";
     MoveStatus = 1;
     need_position = 0;
-    if (axes.a1 == 1) {need_position = Position[1] + step; current_position = Position[1]; qDebug() << "need 1" << need_position << current_position;}
-    if (axes.a4 == 1) {need_position = Position[0] + step; current_position = Position[0]; qDebug() << "need 0" << need_position << current_position;}
+    if (axes.a2 == 1) {need_position = Position[1] + step; current_position = Position[1]; qDebug() << "need 1" << need_position << current_position;}
+    if (axes.a3 == 1) {need_position = Position[0] + step; current_position = Position[0]; qDebug() << "need 0" << need_position << current_position;}
     if (need_position != position) go_to(step,axes);
 }
 

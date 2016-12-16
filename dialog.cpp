@@ -126,7 +126,7 @@ void Dialog::on_reciever_back_pressed()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a4 = 1;
+        axes.a3 = 1;
         emit move(axes,~MAX_FREQUENCY);
     }
 }
@@ -137,7 +137,7 @@ void Dialog::on_reciever_right_pressed()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a1 = 1;
+        axes.a2 = 1;
         emit move(axes,MAX_FREQUENCY);
     }
 }
@@ -148,7 +148,7 @@ void Dialog::on_reciever_forward_pressed()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a4 = 1;
+        axes.a3 = 1;
         emit move(axes,MAX_FREQUENCY);
     }
 }
@@ -159,7 +159,7 @@ void Dialog::on_reciever_left_pressed()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a1 = 1;
+        axes.a2 = 1;
         emit move(axes,~MAX_FREQUENCY);
     }
 }
@@ -171,7 +171,7 @@ void Dialog::on_reciever_forward_released()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a4 = 1;
+        axes.a3 = 1;
         emit stop(axes);
     }
 }
@@ -183,7 +183,7 @@ void Dialog::on_reciever_right_released()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a1 = 1;
+        axes.a2 = 1;
         emit stop(axes);
     }
 }
@@ -195,7 +195,7 @@ void Dialog::on_reciever_back_released()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a4 = 1;
+        axes.a3 = 1;
         emit stop(axes);
     }
 }
@@ -207,7 +207,7 @@ void Dialog::on_reciever_left_released()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a1 = 1;
+        axes.a2 = 1;
         emit stop(axes);
     }
 }
@@ -218,7 +218,7 @@ void Dialog::on_object_right_rotate_pressed()
 {
     Axes_Mask axes;
     axes = {0};
-    axes.a2 = 1;
+    axes.a1 = 1;
     emit move(axes,MAX_FREQUENCY);
 }
 
@@ -228,7 +228,7 @@ void Dialog::on_object_down_pressed()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a2 = 1;
+        axes.a1 = 1;
         emit move_2(axes,MAX_FREQUENCY);
     }
 }
@@ -237,7 +237,7 @@ void Dialog::on_object_left_rotate_pressed()
 {
     Axes_Mask axes;
     axes = {0};
-    axes.a2 = 1;
+    axes.a1 = 1;
     emit move(axes,~MAX_FREQUENCY);
 }
 
@@ -247,7 +247,7 @@ void Dialog::on_object_up_pressed()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a2 = 1;
+        axes.a1 = 1;
         emit move_2(axes,~MAX_FREQUENCY);
     }
 }
@@ -257,7 +257,7 @@ void Dialog::on_object_right_rotate_released()
 {
     Axes_Mask axes;
     axes = {0};
-    axes.a2 = 1;
+    axes.a1 = 1;
     emit stop(axes);
 }
 
@@ -267,7 +267,7 @@ void Dialog::on_object_down_released()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a2 = 1;
+        axes.a1 = 1;
         emit stop_2(axes);
     }
 }
@@ -276,7 +276,7 @@ void Dialog::on_object_left_rotate_released()
 {
     Axes_Mask axes;
     axes = {0};
-    axes.a2 = 1;
+    axes.a1 = 1;
     emit stop(axes);
 }
 
@@ -286,7 +286,7 @@ void Dialog::on_object_up_released()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a2 = 1;
+        axes.a1 = 1;
         emit stop_2(axes);
     }
 }
@@ -299,7 +299,7 @@ void Dialog::on_source_forward_pressed()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a4 = 1;
+        axes.a3 = 1;
         emit move_2(axes,MAX_FREQUENCY);
     }
 }
@@ -310,7 +310,7 @@ void Dialog::on_source_right_pressed()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a1 = 1;
+        axes.a2 = 1;
         emit move_2(axes,MAX_FREQUENCY);
     }
 }
@@ -321,7 +321,7 @@ void Dialog::on_source_back_pressed()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a4 = 1;
+        axes.a3 = 1;
         emit move_2(axes,~MAX_FREQUENCY);
     }
 }
@@ -332,7 +332,7 @@ void Dialog::on_source_left_pressed()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a1 = 1;
+        axes.a2 = 1;
         emit move_2(axes,~MAX_FREQUENCY);
     }
 }
@@ -344,7 +344,7 @@ void Dialog::on_source_forward_released()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a4 = 1;
+        axes.a3 = 1;
         emit stop_2(axes);
     }
 }
@@ -355,7 +355,7 @@ void Dialog::on_source_right_released()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a1 = 1;
+        axes.a2 = 1;
         emit stop_2(axes);
     }
 }
@@ -366,7 +366,7 @@ void Dialog::on_source_back_released()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a4 = 1;
+        axes.a3 = 1;
         emit stop_2(axes);
     }
 }
@@ -377,7 +377,7 @@ void Dialog::on_source_left_released()
     {
         Axes_Mask axes;
         axes = {0};
-        axes.a1 = 1;
+        axes.a2 = 1;
         emit stop_2(axes);
     }
 }
@@ -443,7 +443,7 @@ void Dialog::on_source_left_clicked()
     if(ui->traject_source_left->isChecked())
     {
         Axes_Mask axes = {0};
-        axes.a1 = 1;
+        axes.a2 = 1;
         emit go_2(-1*ui->step_for_source_left->text().toInt(),axes);
         qDebug() << "step_left" << -1*ui->step_for_source_left->text().toInt();
     }
@@ -454,7 +454,7 @@ void Dialog::on_source_right_clicked()
     if(ui->traject_source_right->isChecked())
     {
         Axes_Mask axes = {0};
-        axes.a1 = 1;
+        axes.a2 = 1;
         emit go_2(ui->step_for_source_right->text().toInt(),axes);
         qDebug() << "step_left" << ui->step_for_source_right->text().toInt();
     }
@@ -465,7 +465,7 @@ void Dialog::on_source_forward_clicked()
     if(ui->traject_source_forward->isChecked())
     {
         Axes_Mask axes = {0};
-        axes.a4 = 1;
+        axes.a3 = 1;
         emit go_2(ui->step_for_source_forward->text().toInt(),axes);
     }
 }
@@ -475,7 +475,7 @@ void Dialog::on_source_back_clicked()
     if(ui->traject_source_back->isChecked())
     {
         Axes_Mask axes = {0};
-        axes.a4 = 1;
+        axes.a3 = 1;
         emit go_2(-1*ui->step_for_source_back->text().toInt(),axes);
     }
 }
@@ -488,7 +488,7 @@ void Dialog::on_object_up_clicked()
     if(ui->traject_object_up->isChecked())
     {
         Axes_Mask axes = {0};
-        axes.a2 = 1;
+        axes.a1 = 1;
         emit go_2(-1*ui->step_for_object_up->text().toInt(),axes);
     }
 }
@@ -498,7 +498,7 @@ void Dialog::on_object_down_clicked()
     if(ui->traject_object_down->isChecked())
     {
         Axes_Mask axes = {0};
-        axes.a2 = 1;
+        axes.a1 = 1;
         emit go_2(ui->step_for_object_down->text().toInt(),axes);
     }
 }
@@ -511,7 +511,7 @@ void Dialog::on_reciever_left_clicked()
     if(ui->traject_receiver_left->isChecked())
     {
         Axes_Mask axes = {0};
-        axes.a1 = 1;
+        axes.a2 = 1;
         emit go(-1*ui->step_for_receiver_left->text().toInt(),axes);
     }
 }
@@ -521,7 +521,7 @@ void Dialog::on_reciever_right_clicked()
     if(ui->traject_receiver_right->isChecked())
     {
         Axes_Mask axes = {0};
-        axes.a1 = 1;
+        axes.a2 = 1;
         emit go(ui->step_for_receiver_right->text().toInt(),axes);
     }
 }
@@ -531,7 +531,7 @@ void Dialog::on_reciever_forward_clicked()
     if(ui->traject_receiver_forward->isChecked())
     {
         Axes_Mask axes = {0};
-        axes.a4 = 1;
+        axes.a3 = 1;
         emit go(ui->step_for_receiver_forward->text().toInt(),axes);
     }
 }
@@ -541,7 +541,7 @@ void Dialog::on_reciever_back_clicked()
     if(ui->traject_receiver_back->isChecked())
     {
         Axes_Mask axes = {0};
-        axes.a4 = 1;
+        axes.a3 = 1;
         emit go(-1*ui->step_for_receiver_back->text().toInt(),axes);
     }
 }
