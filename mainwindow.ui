@@ -551,7 +551,6 @@
         <property name="frameShadow">
          <enum>QFrame::Raised</enum>
         </property>
-        <zorder>frame_2</zorder>
        </widget>
       </item>
       <item row="0" column="0" colspan="2">
@@ -621,120 +620,13 @@
           </item>
          </layout>
         </widget>
-        <widget class="QGroupBox" name="groupBox">
-         <property name="geometry">
-          <rect>
-           <x>0</x>
-           <y>50</y>
-           <width>391</width>
-           <height>51</height>
-          </rect>
-         </property>
-         <property name="title">
-          <string>Status</string>
-         </property>
-         <widget class="QLabel" name="ErrorLabel">
-          <property name="geometry">
-           <rect>
-            <x>10</x>
-            <y>10</y>
-            <width>91</width>
-            <height>41</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>3200 should be divided into a number of steps</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="status_of_cam_2">
-          <property name="geometry">
-           <rect>
-            <x>130</x>
-            <y>20</y>
-            <width>81</width>
-            <height>31</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>correct work</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="status_of_motor_2">
-          <property name="geometry">
-           <rect>
-            <x>310</x>
-            <y>20</y>
-            <width>81</width>
-            <height>31</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>correct work</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="status_of_rap_2">
-          <property name="geometry">
-           <rect>
-            <x>220</x>
-            <y>20</y>
-            <width>81</width>
-            <height>31</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>correct work</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="RAP_2">
-          <property name="geometry">
-           <rect>
-            <x>220</x>
-            <y>10</y>
-            <width>47</width>
-            <height>13</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>RAP </string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="Motor_2">
-          <property name="enabled">
-           <bool>true</bool>
-          </property>
-          <property name="geometry">
-           <rect>
-            <x>310</x>
-            <y>0</y>
-            <width>61</width>
-            <height>31</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>Motor</string>
-          </property>
-         </widget>
-         <widget class="QLabel" name="CAM_2">
-          <property name="geometry">
-           <rect>
-            <x>130</x>
-            <y>10</y>
-            <width>47</width>
-            <height>13</height>
-           </rect>
-          </property>
-          <property name="text">
-           <string>CAM</string>
-          </property>
-         </widget>
-        </widget>
         <widget class="QComboBox" name="comboBox_2">
          <property name="geometry">
           <rect>
-           <x>400</x>
-           <y>50</y>
-           <width>101</width>
-           <height>41</height>
+           <x>20</x>
+           <y>60</y>
+           <width>141</width>
+           <height>31</height>
           </rect>
          </property>
          <property name="editable">
@@ -809,10 +701,10 @@
           <string>R to L</string>
          </property>
         </widget>
-        <widget class="QLineEdit" name="NewMode_Range">
+        <widget class="QLineEdit" name="SourceRange">
          <property name="geometry">
           <rect>
-           <x>510</x>
+           <x>270</x>
            <y>80</y>
            <width>41</width>
            <height>20</height>
@@ -822,7 +714,7 @@
         <widget class="QLineEdit" name="NewMode_Step">
          <property name="geometry">
           <rect>
-           <x>560</x>
+           <x>550</x>
            <y>80</y>
            <width>41</width>
            <height>20</height>
@@ -832,14 +724,14 @@
         <widget class="QLabel" name="label_4">
          <property name="geometry">
           <rect>
-           <x>510</x>
-           <y>60</y>
-           <width>47</width>
-           <height>13</height>
+           <x>190</x>
+           <y>80</y>
+           <width>71</width>
+           <height>16</height>
           </rect>
          </property>
          <property name="text">
-          <string>Range</string>
+          <string>SourceRange</string>
          </property>
         </widget>
         <widget class="QLabel" name="label_8">
@@ -853,6 +745,29 @@
          </property>
          <property name="text">
           <string>Step</string>
+         </property>
+        </widget>
+        <widget class="QLineEdit" name="RecieverRange">
+         <property name="geometry">
+          <rect>
+           <x>460</x>
+           <y>80</y>
+           <width>41</width>
+           <height>20</height>
+          </rect>
+         </property>
+        </widget>
+        <widget class="QLabel" name="label_9">
+         <property name="geometry">
+          <rect>
+           <x>370</x>
+           <y>80</y>
+           <width>81</width>
+           <height>20</height>
+          </rect>
+         </property>
+         <property name="text">
+          <string>RecieverRange</string>
          </property>
         </widget>
        </widget>

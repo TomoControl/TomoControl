@@ -126,9 +126,11 @@ MainWindow::MainWindow(QWidget *parent) :
     //new Mode
     ready = 0;
     NewMode_fg = 0;
-    NewMode_range = 0;
+    NewMode_range_source = 0;
+    NewMode_range_reciever = 0;
     NewMode_step = 0;
-    NewMode_size_of_step = 0;
+    NewMode_size_of_step_source = 0;
+    NewMode_size_of_step_reciever = 0;
     NewMode_current_step = 0;
 }
 
@@ -1186,19 +1188,23 @@ void MainWindow::on_pushButton_5_clicked()
         NewMode_fg = 0;
         ui->pushButton_5->setText("Stop");
 
-        NewMode_range = ui->NewMode_Range->text().toUInt();
+        NewMode_range_source = ui->SourceRange->text().toUInt();
+        NewMode_range_reciever = ui->RecieverRange->text().toUInt();
+
         NewMode_step = ui->NewMode_Step->text().toInt();
 
-        NewMode_size_of_step = NewMode_range / NewMode_step;
-        qDebug() << "NewMode_size_of_step" << NewMode_size_of_step;
+        NewMode_size_of_step_source = NewMode_range_source / NewMode_step;
+        NewMode_size_of_step_reciever = NewMode_range_reciever / NewMode_step;
+        qDebug() << "NewMode_size_of_step_source" << NewMode_size_of_step_source;
+        qDebug() << "NewMode_size_of_step_reciever" << NewMode_size_of_step_reciever;
 
-
-        int start_point = 0;
+        int start_point_source = 0, start_point_reciever = 0;
         Axes_Mask axes;
         axes = stepmotor_2->reset_axes_mask();
         axes.a2 = 1;
 
-        start_point = NewMode_range / 2;
+        start_point_source = NewMode_range_source / 2;
+        start_point_reciever = NewMode_range_reciever / 2;
 
         if(ui->radioButton_2->isChecked())
         {
@@ -1213,8 +1219,8 @@ void MainWindow::on_pushButton_5_clicked()
             NewMode_size_of_step *= -1;
         }
 
-        stepmotor_1->go_to_for_calb(start_point,axes);
-        stepmotor_2->go_to_for_calb(-start_point,axes); // противоположная сторона TODO
+        stepmotor_1->go_to_for_calb(start_point_reciever,axes);
+        stepmotor_2->go_to_for_calb(-start_point_source,axes); // противоположная сторона TODO
         // калибровка, исходные точки TODO
         //NewMode_get_start_point();
     }
@@ -1222,9 +1228,11 @@ void MainWindow::on_pushButton_5_clicked()
     {
         // обнуление используемых глобальных переменных
         NewMode_fg = 0;
-        NewMode_range = 0;
+        NewMode_range_source = 0;
+        NewMode_range_reciever = 0;
         NewMode_step = 0;
-        NewMode_size_of_step = 0;
+        NewMode_size_of_step_source = 0;
+        NewMode_size_of_step_reciever = 0;
         NewMode_current_step = 0;
         ready = 0;
         ui->pushButton_5->setText("NewMode");
@@ -1285,8 +1293,8 @@ void MainWindow::onNewModeGetData(ushort *tdata)
 //        axes = stepmotor_2->reset_axes_mask();
 //        axes.a2 = 1;
 
-//        stepmotor_1->go_to_for_calb(-NewMode_range/2 ,axes);
-//        stepmotor_2->go_to_for_calb(NewMode_range/2 ,axes); // TODO проверить
+//        stepmotor_1->go_to_for_calb(-NewMode_range_source/2 ,axes);
+//        stepmotor_2->go_to_for_calb(NewMode_range_source/2 ,axes); // TODO проверить
 
         NewMode_finish();
         return;
@@ -1297,8 +1305,8 @@ void MainWindow::onNewModeGetData(ushort *tdata)
     axes = stepmotor_2->reset_axes_mask();
     axes.a2 = 1;
 
-    stepmotor_1->go_to_for_calb(NewMode_size_of_step,axes);
-    stepmotor_2->go_to_for_calb(-NewMode_size_of_step,axes); // TODO проверить
+    stepmotor_1->go_to_for_calb(NewMode_size_of_step_reciever,axes);
+    stepmotor_2->go_to_for_calb(-NewMode_size_of_step_source,axes); // TODO проверить
 }
 
 // завершение перемещения источника и приемника

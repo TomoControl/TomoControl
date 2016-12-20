@@ -86,9 +86,9 @@ public:
     //new Mode
     bool NewMode_fg;
     uchar ready;
-    uint NewMode_range;
+    uint NewMode_range_source, NewMode_range_reciever;
     int NewMode_step;
-    int NewMode_size_of_step;
+    int NewMode_size_of_step_source, NewMode_size_of_step_reciever;
     ushort NewMode_current_step;
     ushort *addition_data;
 
