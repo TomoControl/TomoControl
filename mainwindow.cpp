@@ -310,11 +310,11 @@ void MainWindow::on_Start_AutoScan_clicked()
         {
             SizeOfStep = FULL_TURN / NumberOfImage;
             qDebug() << "size of step" << SizeOfStep << FULL_TURN << NumberOfImage;
-            ui->ErrorLabel->setText("");
+            //ui->ErrorLabel->setText("");
         }
         else
         {
-            ui->ErrorLabel->setText("Введите корректное число проекций");
+           // ui->ErrorLabel->setText("Введите корректное число проекций");
             return;
         }
 
@@ -1184,7 +1184,7 @@ void MainWindow::on_pushButton_5_clicked()
         // установка времени экспозиции камеры
         AccumulationTime = ui->Exposure->text().toInt();
         reciever->SetAccumulationTime(AccumulationTime);
-
+        rap->on((uchar)ui->U_Auto->text().toShort(), (uchar)ui->I_Auto->text().toShort());
         NewMode_fg = 0;
         ui->pushButton_5->setText("Stop");
 
@@ -1209,18 +1209,20 @@ void MainWindow::on_pushButton_5_clicked()
         if(ui->radioButton_2->isChecked())
         {
             qDebug() << "Right to Left";
-            start_point *= -1;
+            start_point_source *= -1;
+            NewMode_size_of_step_reciever *= -1;
 
         }
 
         if(ui->radioButton->isChecked())
         {
             qDebug() << "Left to Right";
-            NewMode_size_of_step *= -1;
+            start_point_reciever *= -1;
+            NewMode_size_of_step_source *= -1;
         }
 
         stepmotor_1->go_to_for_calb(start_point_reciever,axes);
-        stepmotor_2->go_to_for_calb(-start_point_source,axes); // противоположная сторона TODO
+        stepmotor_2->go_to_for_calb(start_point_source,axes); // противоположная сторона TODO
         // калибровка, исходные точки TODO
         //NewMode_get_start_point();
     }
@@ -1257,7 +1259,7 @@ void MainWindow::NewMode_start_Xray()
 // основная логика
 void MainWindow::onNewModeGetData(ushort *tdata)
 {
-    rap->off();
+    //rap->off();
     NewMode_current_step++;
     qDebug() << "onNewModeGetData";
     ui->current_step->setText(QString::number(NewMode_current_step));
@@ -1306,7 +1308,7 @@ void MainWindow::onNewModeGetData(ushort *tdata)
     axes.a2 = 1;
 
     stepmotor_1->go_to_for_calb(NewMode_size_of_step_reciever,axes);
-    stepmotor_2->go_to_for_calb(-NewMode_size_of_step_source,axes); // TODO проверить
+    stepmotor_2->go_to_for_calb(NewMode_size_of_step_source,axes); // TODO проверить
 }
 
 // завершение перемещения источника и приемника
@@ -1321,7 +1323,8 @@ void MainWindow::NewMode_continue()
 //        dData = new ushort[IMAGE_WIDTH * IMAGE_HEIGHT];
 //        onNewModeGetData(dData);
         ready = 0;
-        rap->on((uchar)ui->U_Auto->text().toShort(), (uchar)ui->I_Auto->text().toShort());
+        reciever->AcquireImage();
+        //rap->on((uchar)ui->U_Auto->text().toShort(), (uchar)ui->I_Auto->text().toShort());
     }
 }
 

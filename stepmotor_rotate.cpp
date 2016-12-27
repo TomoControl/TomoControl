@@ -91,7 +91,7 @@ void stepmotor_rotate::initialization(QHostAddress Source, QHostAddress Destinat
      if (calb_axes.a2 == 1)
      {
 
-         if(MoveStatus && (abs(Position[1] - need_position) < 3))
+         if(MoveStatus && (abs(Position[1] - need_position) < 10))
          {
             qDebug() << "calb axes a 2" << Position[1] << need_position;
             qDebug() << "calib" << position << need_position;
@@ -184,7 +184,7 @@ void stepmotor_rotate::onClientReadyRead() // чтение пришедшего 
     job = status->Job;
 
     // определение текущих координат
-    position = status->Position_0;
+    position = status->Position_1;
 
     // индикация ошибки
     error_number = status->ErrCode;
@@ -894,8 +894,8 @@ void stepmotor_rotate::go_to_for_calb(int step,Axes_Mask axes)
     MoveStatus = 1;
     need_position = 0;
     if (axes.a2 == 1) {need_position = Position[1] + step; current_position = Position[1]; qDebug() << "need 1" << need_position << current_position;}
-    if (axes.a3 == 1) {need_position = Position[0] + step; current_position = Position[0]; qDebug() << "need 0" << need_position << current_position;}
-    if (need_position != position) go_to(step,axes);
+    //if (axes.a3 == 1) {need_position = Position[0] + step; current_position = Position[0]; qDebug() << "need 0" << need_position << current_position;}
+    if (need_position != position) go_to(step,axes); else qDebug() << "errr";
 }
 
 Axes_Mask stepmotor_rotate::reset_axes_mask()
